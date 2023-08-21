@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "aes.h"
 
-void pad_bytes(unsigned char byteStream[], size_t *len)
+void pad_bytes(unsigned char *byteStream, size_t *len)
 {
     size_t padLen = 16-(*len % 16);
     for(size_t i=0; i<padLen; i++)
@@ -50,11 +51,13 @@ int main()
 
     unsigned char state[4][4];
     stateArray(byteStream, state);
+    substitute(state);
 
+    //after s_box substitution
     for(int i=0; i<4; i++)
     {
         for(int j=0; j<4; j++)
-        printf("%02x ", state[i][j]);
+        printf("%0x ", state[i][j]);
     }
 
     return 0;
