@@ -52,6 +52,7 @@ int main()
     unsigned char state[4][4];
     stateArray(byteStream, state);
     substitute(state);
+    shift_row(state);
 
     //after s_box substitution
     for(int i=0; i<4; i++)
