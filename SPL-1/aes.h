@@ -55,3 +55,4 @@ void shift_row(unsigned char state[4][4])
     state[3][1] = state[3][0];
     state[3][0] = temp;
 }
+
