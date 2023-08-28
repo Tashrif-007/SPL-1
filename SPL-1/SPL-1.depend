@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1693217528 source:/home/iit/Desktop/SPL-1/SPL-1/main.c
+	<stdio.h>
+	<stdlib.h>
+	"aes.h"
+
+1693216819 /home/iit/Desktop/SPL-1/SPL-1/aes.h
+	<stdio.h>
+

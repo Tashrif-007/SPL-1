@@ -73,12 +73,13 @@ int main()
     substitute(state);
     shift_row(state);
 
-    //after s_box substitution
-    /*for(int i=0; i<4; i++)
+    /*after s_box substitution
+    for(int i=0; i<4; i++)
     {
         for(int j=0; j<4; j++)
         printf("%0x ", state[i][j]);
-    }*/
-    key_generation(key);
+        printf("\n");
+    }
+    key_generation(key);*/
     return 0;
 }
