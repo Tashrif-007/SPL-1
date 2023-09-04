@@ -27,7 +27,6 @@ unsigned char mixColumn[4][4] = {
     0x03, 0x01, 0x01, 0x02
 };
 
-void
 void substitute(unsigned char state[4][4])
 {
     for(int i=0; i<4; i++)
