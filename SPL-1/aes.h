@@ -27,6 +27,10 @@ unsigned char mixColumn[4][4] = {
     0x03, 0x01, 0x01, 0x02
 };
 
+unsigned char rcons[10] = {
+    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
+};
+
 void substitute(unsigned char state[4][4])
 {
     for(int i=0; i<4; i++)
@@ -65,5 +69,94 @@ void shift_row(unsigned char state[4][4])
 
 void mix_col(unsigned char state[4][4])
 {
+    unsigned char res[4][4];
 
+    for(int j=0; j<4; j++)
+    {
+        for(int i=0; i<4; i++)
+        {
+            res[j][i]=0;
+            for(int k=0; k<4; k++)
+            {
+                unsigned char prod;
+                unsigned char res1 = state[i][j];
+                unsigned char res2 = mixColumn[k][i];
+
+                if(res2==0x02)
+                    prod = (res1<<1) ^ ((res1 & 0x80) ? 0x1b : 0x00);
+                else if(res2 == 0x03)
+                    prod = (res1<<1) ^ ((res1 & 0x80) ? 0x1b : 0x00) ^ res1;
+                else
+                    prod = res1;
+
+                res[j][i] ^= prod;
+            }
+
+
+        }
+    }
+
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+            state[i][j] = res[i][j];
+    }
+}
+
+void key_generation(unsigned char key[4][8])
+{
+    for(int i=0; i<32; i++)
+    {
+        key[i] = rand()%256;
+    }
+    for(int i=0; i<32; i++)
+    {
+        printf("%02x ", key[i]);
+        printf("\n");
+    }
+}
+
+void key_expansion(unsigned char key[32], unsigned char roundKeys[240])
+{
+    for(int i=0; i<32; i++)
+        roundKeys[i] = key[i];
+
+    int round_num=1;
+    int key_len = 32;
+
+    while(key_len<240)
+    {
+        unsigned char temp[4];
+
+        for(int i=0; i<4; i++){
+            temp[i] = roundKeys[key_len-4+i];
+        }
+
+        if(key_len%32==0)
+        {
+            unsigned char tempVal = temp[0];
+            temp[0] = subs_box[temp[1]^rcons[round_num-1];
+            temp[1] = subs_box[temp[2]];
+            temp[2] = subs_box[temp[3]];
+            temp[3] = subs_box[tempVal];
+
+            round++;
+        }
+        for(int i=0; i<4; i++)
+        {
+            roundKeys[key_len] = roundKeys[key_len-32]^temp[i];
+            key_len++;
+        }
+    }
+}
+
+void add_round_key(unsigned char state[4][4], unsigned char roundKeys[16])
+{
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        {
+            state[i][j] ^= roundKeys[i*4+j];
+        }
+    }
 }

@@ -28,21 +28,6 @@ void stateArray(const unsigned char *byteStream, unsigned char state[4][4])
     }
 }
 
-void key_generation(unsigned char key[4][8])
-{
-    for(int i=0; i<4; i++)
-    {
-        for(int j=0; j<8; j++)
-        key[i][j] = rand()%256;
-    }
-    for(int i=0; i<4; i++)
-    {
-        for(int j=0; j<8; j++)
-        printf("%02x ", key[i][j]);
-        printf("\n");
-    }
-}
-
 int main()
 {
     FILE *file = fopen("input.txt", "rb");
@@ -68,18 +53,40 @@ int main()
 
     pad_bytes(byteStream, &len);
 
-    unsigned char state[4][4], key[4][8];
+    unsigned char state[4][4], key[32];
     stateArray(byteStream, state);
-    substitute(state);
-    shift_row(state);
-
-    /*after s_box substitution*/
+    printf("State array: \n");
     for(int i=0; i<4; i++)
     {
         for(int j=0; j<4; j++)
         printf("%0x ", state[i][j]);
         printf("\n");
     }
-    key_generation(key);
+    printf("\nAfter sub\n");
+    substitute(state);
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        printf("%0x ", state[i][j]);
+        printf("\n");
+    }
+    printf("\nAfter shift\n");
+    shift_row(state);
+
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        printf("%02x ", state[i][j]);
+        printf("\n");
+    }
+    mix_col(state);
+    printf("\nafter mix\n");
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        printf("%0x ", state[i][j]);
+        printf("\n");
+    }
+    //key_generation(key);
     return 0;
 }
