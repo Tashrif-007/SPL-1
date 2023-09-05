@@ -53,7 +53,10 @@ int main()
 
     pad_bytes(byteStream, &len);
 
-    unsigned char state[4][4], key[32];
+    unsigned char state[4][4];
+    unsigned char key[32];
+    unsigned char round_keys[240];
+
     stateArray(byteStream, state);
     printf("State array: \n");
     for(int i=0; i<4; i++)
@@ -87,6 +90,38 @@ int main()
         printf("%0x ", state[i][j]);
         printf("\n");
     }
-    //key_generation(key);
+    key_generation(key);
+
+    key_expansion(key, round_keys);
+
+    //aes starts
+
+    add_round_key(state, round_keys, 0);
+
+    for(int rounds = 1; rounds<14; rounds++)
+    {
+        printf("\nRound No.%d\n", rounds);
+        substitute(state);
+        shift_row(state);
+        mix_col(state);
+        add_round_key(state, round_keys, rounds);
+    }
+
+    printf("\nFinal Round:\n");
+    substitute(state);
+    shift_row(state);
+    add_round_key(state, round_keys, 14);
+
+    printf("\nEncrypted Cipher text:\n");
+
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        {
+            printf("%02x ", state[i][j]);
+        }
+        printf("\n");
+    }
+
     return 0;
 }

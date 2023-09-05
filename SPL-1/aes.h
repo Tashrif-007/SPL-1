@@ -103,7 +103,7 @@ void mix_col(unsigned char state[4][4])
     }
 }
 
-void key_generation(unsigned char key[4][8])
+void key_generation(unsigned char key[32])
 {
     for(int i=0; i<32; i++)
     {
@@ -135,12 +135,12 @@ void key_expansion(unsigned char key[32], unsigned char roundKeys[240])
         if(key_len%32==0)
         {
             unsigned char tempVal = temp[0];
-            temp[0] = subs_box[temp[1]^rcons[round_num-1];
+            temp[0] = subs_box[temp[1]^rcons[round_num-1]];
             temp[1] = subs_box[temp[2]];
             temp[2] = subs_box[temp[3]];
             temp[3] = subs_box[tempVal];
 
-            round++;
+            round_num++;
         }
         for(int i=0; i<4; i++)
         {
@@ -150,13 +150,16 @@ void key_expansion(unsigned char key[32], unsigned char roundKeys[240])
     }
 }
 
-void add_round_key(unsigned char state[4][4], unsigned char roundKeys[16])
+void add_round_key(unsigned char state[4][4], unsigned char roundKeys[240], int round_num)
 {
+    int keyIndex = round_num*16;
+
     for(int i=0; i<4; i++)
     {
         for(int j=0; j<4; j++)
         {
-            state[i][j] ^= roundKeys[i*4+j];
+            state[i][j] ^= roundKeys[keyIndex];
+            keyIndex++;
         }
     }
 }
