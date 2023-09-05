@@ -65,36 +65,24 @@ int main()
         printf("%0x ", state[i][j]);
         printf("\n");
     }
-    printf("\nAfter sub\n");
+
     substitute(state);
+    printf("After subs: \n");
     for(int i=0; i<4; i++)
     {
         for(int j=0; j<4; j++)
         printf("%0x ", state[i][j]);
         printf("\n");
     }
-    printf("\nAfter shift\n");
-    shift_row(state);
-
-    for(int i=0; i<4; i++)
-    {
-        for(int j=0; j<4; j++)
-        printf("%02x ", state[i][j]);
-        printf("\n");
-    }
-    mix_col(state);
-    printf("\nafter mix\n");
-    for(int i=0; i<4; i++)
+    inv_substitute(state);
+    printf("after inv subs: \n");
+     for(int i=0; i<4; i++)
     {
         for(int j=0; j<4; j++)
         printf("%0x ", state[i][j]);
         printf("\n");
     }
-    key_generation(key);
-
-    key_expansion(key, round_keys);
-
-    //aes starts
+    /*aes starts
 
     add_round_key(state, round_keys, 0);
 
@@ -122,6 +110,6 @@ int main()
         }
         printf("\n");
     }
-
+*/
     return 0;
 }
