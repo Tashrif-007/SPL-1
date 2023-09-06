@@ -32,12 +32,10 @@
 			<Add option="-Wall" />
 		</Compiler>
 		<Unit filename="aes.h" />
+		<Unit filename="huffman.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Extensions>
-			<code_completion />
-			<debugger />
-		</Extensions>
+		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

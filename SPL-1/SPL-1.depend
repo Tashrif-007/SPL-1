@@ -7,11 +7,16 @@
 1693216819 /home/iit/Desktop/SPL-1/SPL-1/aes.h
 	<stdio.h>
 
-1694024758 source:c:\users\asus\desktop\new folder\spl-1\spl-1\main.c
+1694028292 source:c:\users\asus\desktop\new folder\spl-1\spl-1\main.c
 	<stdio.h>
 	<stdlib.h>
+	"huffman.h"
 	"aes.h"
 
 1694024810 c:\users\asus\desktop\new folder\spl-1\spl-1\aes.h
 	<stdio.h>
+
+1694028419 c:\users\asus\desktop\new folder\spl-1\spl-1\huffman.h
+	<stdio.h>
+	<stdlib.h>
 

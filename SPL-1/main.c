@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "huffman.h"
 //#include <openssl/rand.h>
 #include "aes.h"
 #define ROW 4
@@ -151,5 +152,6 @@ int main()
         }
         printf("\n");
     }
+    //huffman();
     return 0;
 }
