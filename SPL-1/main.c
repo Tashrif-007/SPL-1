@@ -16,6 +16,27 @@ void pad_bytes(unsigned char *byteStream, size_t *len)
     *len+=padLen;
 }
 
+void remove_padding(unsigned char *byteStream, size_t *len)
+{
+    if (*len == 0) {
+        return;
+    }
+
+    unsigned char padLen = byteStream[*len - 1];
+
+    if (padLen <= 16 && padLen > 0) {
+        for (size_t i = *len - padLen; i < *len; i++) {
+            if (byteStream[i] != padLen) {
+                printf("Invalid padding!\n");
+                return;
+            }
+        }
+        *len -= padLen;
+    } else {
+        printf("Invalid padding value!\n");
+    }
+}
+
 void stateArray(const unsigned char *byteStream, unsigned char state[4][4])
 {
     for(int i=0; i<4; i++)
@@ -27,8 +48,7 @@ void stateArray(const unsigned char *byteStream, unsigned char state[4][4])
         }
     }
 }
-
-int main()
+size_t read_file_to_byteStream(unsigned char *byteStream, unsigned char state[4][4])
 {
     FILE *file = fopen("input.txt", "rb");
     if(file==NULL)
@@ -40,8 +60,6 @@ int main()
     fseek(file, 0, SEEK_END);
     long size = ftell(file);
     fseek(file, 0, SEEK_SET);
-
-    unsigned char byteStream[256];
     size_t len=0;
 
     while(len<size)
@@ -50,58 +68,53 @@ int main()
         len+=read;
     }
     fclose(file);
+    return len;
+}
 
-    pad_bytes(byteStream, &len);
+void decrypt(unsigned char state[4][4], unsigned char round_keys[240], size_t len) {
 
+    printf("Last round (Decryption):\n");
+    add_round_key(state, round_keys, 14);
+    inv_shift_row(state);
+    inv_substitute(state);
+
+    for (int round = 13; round >= 1; round--) {
+        printf("Round %d (Decryption):\n", round);
+        add_round_key(state, round_keys, round);
+        inv_mix_col(state);
+        inv_shift_row(state);
+        inv_substitute(state);
+    }
+
+    //remove_padding(state[0], &len);
+
+
+    unsigned char decryptedOutput[256];
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            decryptedOutput[i * 4 + j] = state[j][i];
+        }
+    }
+
+}
+
+int main()
+{
+    unsigned char byteStream[256];
     unsigned char state[4][4];
     unsigned char key[32];
     unsigned char round_keys[240];
 
+    size_t len=read_file_to_byteStream(byteStream, state);
+
+    pad_bytes(byteStream, &len);
+
     stateArray(byteStream, state);
-    printf("State array: \n");
-    for(int i=0; i<4; i++)
-    {
-        for(int j=0; j<4; j++)
-        printf("%0x ", state[i][j]);
-        printf("\n");
-    }
+    key_generation(key);
+    key_expansion(key, round_keys);
 
-    substitute(state);
-    printf("After subs: \n");
-    for(int i=0; i<4; i++)
-    {
-        for(int j=0; j<4; j++)
-        printf("%0x ", state[i][j]);
-        printf("\n");
-    }
-    inv_substitute(state);
-    printf("after inv subs: \n");
-     for(int i=0; i<4; i++)
-    {
-        for(int j=0; j<4; j++)
-        printf("%0x ", state[i][j]);
-        printf("\n");
-    }
-    /*aes starts
-
-    add_round_key(state, round_keys, 0);
-
-    for(int rounds = 1; rounds<14; rounds++)
-    {
-        printf("\nRound No.%d\n", rounds);
-        substitute(state);
-        shift_row(state);
-        mix_col(state);
-        add_round_key(state, round_keys, rounds);
-    }
-
-    printf("\nFinal Round:\n");
-    substitute(state);
-    shift_row(state);
-    add_round_key(state, round_keys, 14);
-
-    printf("\nEncrypted Cipher text:\n");
-
+    printf("Before encryption: \n");
     for(int i=0; i<4; i++)
     {
         for(int j=0; j<4; j++)
@@ -110,6 +123,33 @@ int main()
         }
         printf("\n");
     }
-*/
+    //aes begins
+    add_round_key(state, round_keys, 0);
+
+    for(int round=1; round<14; round++)
+    {
+        printf("Round %d: \n", round);
+        substitute(state);
+        shift_row(state);
+        mix_col(state);
+        add_round_key(state, round_keys, round);
+    }
+
+    printf("Last round:\n");
+    substitute(state);
+    shift_row(state);
+    add_round_key(state, round_keys, 14);
+
+
+    decrypt(state, round_keys, len);
+    printf("After decryption: \n");
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        {
+            printf("%02x ", state[i][j]);
+        }
+        printf("\n");
+    }
     return 0;
 }

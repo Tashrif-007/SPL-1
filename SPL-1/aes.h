@@ -46,6 +46,13 @@ unsigned char mixColumn[4][4] = {
     0x03, 0x01, 0x01, 0x02
 };
 
+unsigned char inv_mixColumn[4][4] = {
+    0x0e, 0x0b, 0x0d, 0x09,
+    0x09, 0x0e, 0x0b, 0x0d,
+    0x0d, 0x09, 0x0e, 0x0b,
+    0x0b, 0x0d, 0x09, 0x0e
+};
+
 unsigned char rcons[10] = {
     0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
 };
@@ -99,6 +106,28 @@ void shift_row(unsigned char state[4][4])
     state[3][0] = temp;
 }
 
+void inv_shift_row(unsigned char state[4][4])
+{
+    unsigned char temp = state[1][0];
+    state[1][0] = state[1][3];
+    state[1][3] = state[1][2];
+    state[1][2] = state[1][1];
+    state[1][1] = temp;
+
+    temp = state[2][0];
+    state[2][0] = state[2][2];
+    state[2][2] = temp;
+    temp = state[2][1];
+    state[2][1] = state[2][3];
+    state[2][3] = temp;
+
+    temp = state[3][3];
+    state[3][3] = state[3][0];
+    state[3][0] = state[3][1];
+    state[3][1] = state[3][2];
+    state[3][2] = temp;
+
+}
 void mix_col(unsigned char state[4][4])
 {
     unsigned char res[4][4];
@@ -124,6 +153,44 @@ void mix_col(unsigned char state[4][4])
                 res[j][i] ^= prod;
             }
 
+        }
+    }
+
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+            state[i][j] = res[i][j];
+    }
+}
+
+void inv_mix_col(unsigned char state[4][4])
+{
+    unsigned char res[4][4];
+
+    for(int j=0; j<4; j++)
+    {
+        for(int i=0; i<4; i++)
+        {
+            res[j][i]=0;
+            for(int k=0; k<4; k++)
+            {
+                unsigned char prod;
+                unsigned char res1 = state[i][j];
+                unsigned char res2 = inv_mixColumn[k][i];
+
+                if(res2==0x0e)
+                    prod = (res1<<1)^(res1<<3)^(res1<<2)^res1;
+                else if(res2==0x0b)
+                    prod = (res1<<3)^(res1<<1)^res1;
+                else if(res2==0x0d)
+                    prod = (res1<<3)^(res1<<2)^res1;
+                else if(res2==0x09)
+                    prod = (res1<<3)^res1;
+                else
+                    prod = res1;
+
+                res[j][i] ^= prod;
+            }
 
         }
     }
@@ -140,11 +207,6 @@ void key_generation(unsigned char key[32])
     for(int i=0; i<32; i++)
     {
         key[i] = rand()%256;
-    }
-    for(int i=0; i<32; i++)
-    {
-        printf("%02x ", key[i]);
-        printf("\n");
     }
 }
 
