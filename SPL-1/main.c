@@ -76,18 +76,18 @@ void decrypt(unsigned char state[4][4], unsigned char round_keys[240], size_t le
 
     printf("Last round (Decryption):\n");
     add_round_key(state, round_keys, 14);
-    inv_shift_row(state);
-    inv_substitute(state);
 
     for (int round = 13; round >= 1; round--) {
         printf("Round %d (Decryption):\n", round);
-        add_round_key(state, round_keys, round);
-        inv_mix_col(state);
         inv_shift_row(state);
         inv_substitute(state);
+        add_round_key(state, round_keys, round);
+        inv_mix_col(state);
     }
-
-    //remove_padding(state[0], &len);
+        inv_shift_row(state);
+        inv_substitute(state);
+        add_round_key(state, round_keys, 0);
+    remove_padding(state[0], &len);
 
 
     unsigned char decryptedOutput[256];
