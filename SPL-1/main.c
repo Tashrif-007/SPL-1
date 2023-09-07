@@ -4,6 +4,7 @@
 //#include <openssl/rand.h>
 #include "aes.h"
 #define key_size 32
+#define mx 100
 
 void pad_bytes(unsigned char *byteStream, size_t *len)
 {
@@ -36,7 +37,7 @@ void remove_padding(unsigned char *byteStream, size_t *len)
     }
 }
 
-void stateArray(const unsigned char *byteStream, unsigned char state[4][4])
+void stateArray(const unsigned char byteStream[], unsigned char state[4][4])
 {
     for(int i=0; i<4; i++)
     {
@@ -47,7 +48,8 @@ void stateArray(const unsigned char *byteStream, unsigned char state[4][4])
         }
     }
 }
-void read_file_to_byteStream(unsigned char *byteStream, unsigned char state[4][4])
+
+size_t read_file_to_byteStream(unsigned char *byteStream, unsigned char state[][4][4], size_t block_size, size_t *block_num)
 {
     FILE *file = fopen("input.txt", "rb");
     if(file==NULL)
@@ -56,95 +58,89 @@ void read_file_to_byteStream(unsigned char *byteStream, unsigned char state[4][4
         exit(1);
     }
 
-    fseek(file, 0, SEEK_END);
-    long size = ftell(file);
-    fseek(file, 0, SEEK_SET);
     size_t len=0;
+    *block_num=0;
 
-    while(len<size)
+    while(1)
     {
-        size_t read = fread(byteStream+len, 1, 16, file);
+        size_t read = fread(byteStream+len, 1, block_size, file);
+        if(read==0)
+            break;
+
         len+=read;
-    }
-    fclose(file);
-}
+        (*block_num)++;
 
-void decrypt(unsigned char state[4][4], unsigned char round_keys[240])
-{
-    FILE *decrypted = fopen("output.txt", "r");
-
-    for(int i=0; i<4; i++)
-    {
-        for(int j=0; j<4; j++)
+        if(*block_num>0)
         {
-            unsigned char val;
-            fscanf(decrypted, "%02x ", &val);
-            state[i][j] = val;
+            for(size_t i=0; i<16; i++)
+                state[*block_num-1][i%4][i/4] = byteStream[len-16+i];
         }
     }
+    fclose(file);
+    return len;
+}
 
-    fclose(decrypted);
+void decrypt(unsigned char state[4][4], unsigned char round_keys[240], size_t len, size_t block_num)
+{
 
     printf("Last round (Decryption):\n");
-    add_round_key(state, round_keys, 14);
+    for(size_t i=0; i<block_num; i++)
+        add_round_key(state[i], round_keys, 14);
 
     for (int round = 13; round >= 1; round--) {
         printf("Round %d (Decryption):\n", round);
-        inv_shift_row(state);
-        inv_substitute(state);
-        add_round_key(state, round_keys, round);
-        invMixCol(state);
-    }
-        inv_shift_row(state);
-        inv_substitute(state);
-        add_round_key(state, round_keys, 0);
-
-
-    unsigned char decryptedOutput[256];
-
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            decryptedOutput[i * 4 + j] = state[j][i];
+        for(size_t i=0; i<block_num; i++)
+        {
+            inv_shift_row(state[i]);
+            inv_substitute(state[i]);
+            add_round_key(state[i], round_keys, round);
+            invMixCol(state[i]);
         }
+    }
+    for(size_t i=0; i<block_num; i++)
+    {
+        inv_shift_row(state[i]);
+        inv_substitute(state[i]);
+        add_round_key(state[i], round_keys, 0);
     }
 
 }
 
-void encrypt(unsigned char state[4][4], unsigned char round_keys[])
+void encrypt(unsigned char state[4][4], unsigned char round_keys[], size_t block_num)
 {
-    add_round_key(state, round_keys, 0);
+    for(size_t i=0; i<block_num; i++)
+        add_round_key(state[i], round_keys, 0);
 
     for(int round=1; round<14; round++)
     {
         printf("Round %d: \n", round);
-        substitute(state);
-        shift_row(state);
-        mixCol(state);
-        add_round_key(state, round_keys, round);
+        for(size_t i=0; i<block_num; i++)
+        {
+            substitute(state[i]);
+            shift_row(state[i]);
+            mixCol(state[i]);
+            add_round_key(state[i], round_keys, round);
+        }
     }
 
     printf("Last round:\n");
-    substitute(state);
-    shift_row(state);
-    add_round_key(state, round_keys, 14);
-
-    FILE *encrypted = fopen("output.txt", "w");
-    for(int i=0; i<4; i++)
+    for(size_t i=0; i<block_num; i++)
     {
-        for(int j=0; j<4; j++)
-            fprintf(encrypted, "%02x ", state[i][j]);
+        substitute(state[i]);
+        shift_row(state[i]);
+        add_round_key(state[i], round_keys, 14);
     }
-    fclose(encrypted);
 }
 
 int main()
 {
     unsigned char byteStream[256];
-    unsigned char state[4][4];
+    unsigned char state[mx][4][4];
     unsigned char key[32];
     unsigned char round_keys[240];
+    size_t block_count=0;
 
-    read_file_to_byteStream(byteStream, state);
+    size_t len = read_file_to_byteStream(byteStream, state, 16, &block_count);
 
     //pad_bytes(byteStream, &len);
 
@@ -153,36 +149,40 @@ int main()
     key_expansion(key, round_keys);
 
     printf("Before encryption: \n");
-    for(int i=0; i<4; i++)
+    for(size_t i=0; i<block_count; i++)
     {
         for(int j=0; j<4; j++)
         {
-            printf("%02x ", state[i][j]);
+            for(int k=0; k<4; k++)
+                printf("%02x ", state[i][j][k]);
+            printf("\n");
         }
-        printf("\n");
+        printf("\n\n");
+    }
+    encrypt(state, round_keys, block_count);
+
+    for(size_t i=0; i<block_count; i++)
+    {
+        for(int j=0; j<4; j++)
+        {
+            for(int k=0; k<4; k++)
+                printf("%02x ", state[i][j][k]);
+            printf("\n");
+        }
+        printf("\n\n");
     }
 
-    encrypt(state, round_keys);
-    printf("\nAfter encryption: \n");
+    decrypt(state, round_keys, len, block_count);
 
-     for(int i=0; i<4; i++)
+    for(size_t i=0; i<block_count; i++)
     {
         for(int j=0; j<4; j++)
         {
-            printf("%02x ", state[i][j]);
+            for(int k=0; k<4; k++)
+                printf("%02x ", state[i][j][k]);
+            printf("\n");
         }
-        printf("\n");
-    }
-
-    decrypt(state, round_keys);
-    printf("\nAfter decryption: \n");
-    for(int i=0; i<4; i++)
-    {
-        for(int j=0; j<4; j++)
-        {
-            printf("%02x ", state[i][j]);
-        }
-        printf("\n");
+        printf("\n\n");
     }
     //huffman();
     return 0;
