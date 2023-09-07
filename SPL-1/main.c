@@ -82,12 +82,12 @@ void decrypt(unsigned char state[4][4], unsigned char round_keys[240], size_t le
         inv_shift_row(state);
         inv_substitute(state);
         add_round_key(state, round_keys, round);
-        inv_mix_col(state);
+        invMixCol(state);
     }
         inv_shift_row(state);
         inv_substitute(state);
         add_round_key(state, round_keys, 0);
-    remove_padding(state[0], &len);
+        remove_padding(state[0], &len);
 
 
     unsigned char decryptedOutput[256];
@@ -132,7 +132,7 @@ int main()
         printf("Round %d: \n", round);
         substitute(state);
         shift_row(state);
-        mix_col(state);
+        mixCol(state);
         add_round_key(state, round_keys, round);
     }
 

@@ -128,7 +128,7 @@ void inv_shift_row(unsigned char state[4][4])
     state[3][2] = temp;
 
 }
-void mix_col(unsigned char state[4][4])
+/*void mix_col(unsigned char state[4][4])
 {
     unsigned char res[4][4];
 
@@ -161,9 +161,113 @@ void mix_col(unsigned char state[4][4])
         for(int j=0; j<4; j++)
             state[i][j] = res[i][j];
     }
+}*/
+
+unsigned char galois(unsigned char x, unsigned char y)
+{
+    unsigned char ans=0;
+    unsigned char i;
+    unsigned char bit;
+
+    for(i=0; i<8; i++)
+    {
+        if((y&1)==1)
+            ans^=x;
+        bit = (x&0x80);
+        x<<=1;
+        if(bit==0x80)
+            x^=0x1b;
+        y>>=1;
+    }
+    return ans;
 }
 
-void inv_mix_col(unsigned char state[4][4])
+void perform_mix(unsigned char col[])
+{
+    unsigned char res[4];
+    for(int i=0; i<4; i++)
+    res[i] = col[i];
+
+    col[0] = galois(res[0], 2)^
+             galois(res[3], 1)^
+             galois(res[2], 1)^
+             galois(res[1], 3);
+
+    col[1] = galois(res[1], 2)^
+             galois(res[0], 1)^
+             galois(res[3], 1)^
+             galois(res[2], 3);
+
+    col[2] = galois(res[2], 2)^
+             galois(res[1], 1)^
+             galois(res[0], 1)^
+             galois(res[3], 3);
+
+    col[3] = galois(res[3], 2)^
+             galois(res[2], 1)^
+             galois(res[1], 1)^
+             galois(res[0], 3);
+}
+
+void mixCol(unsigned char state[])
+{
+    unsigned char col[4];
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        col[j] = state[j*4+i];
+
+        perform_mix(col);
+
+        for(int j=0; j<4; j++)
+        state[j*4+i] = col[j];
+    }
+}
+
+void perform_inv_mix(unsigned char col[])
+{
+    unsigned char res[4];
+
+    for(int i=0; i<4; i++)
+    res[i] = col[i];
+
+    col[0] = galois(res[0], 14)^
+             galois(res[3], 9)^
+             galois(res[2], 13)^
+             galois(res[1], 11);
+
+    col[1] = galois(res[1], 14)^
+             galois(res[0], 9)^
+             galois(res[3], 13)^
+             galois(res[2], 11);
+
+    col[2] = galois(res[2], 14)^
+             galois(res[1], 9)^
+             galois(res[0], 13)^
+             galois(res[3], 11);
+
+    col[3] = galois(res[3], 14)^
+             galois(res[2], 9)^
+             galois(res[1], 13)^
+             galois(res[0], 11);
+}
+void invMixCol(unsigned char state[])
+{
+    unsigned char col[4];
+
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        col[j] = state[j*4+i];
+
+        perform_inv_mix(col);
+
+        for(int j=0; j<4; j++)
+        state[j*4+i] = col[j];
+    }
+}
+
+/*void inv_mix_col(unsigned char state[4][4])
 {
     unsigned char res[4][4];
 
@@ -200,7 +304,7 @@ void inv_mix_col(unsigned char state[4][4])
         for(int j=0; j<4; j++)
             state[i][j] = res[i][j];
     }
-}
+}*/
 
 void key_generation(unsigned char key[32])
 {
