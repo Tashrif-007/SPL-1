@@ -3,8 +3,6 @@
 #include "huffman.h"
 //#include <openssl/rand.h>
 #include "aes.h"
-#define ROW 4
-#define COL 8
 #define key_size 32
 
 void pad_bytes(unsigned char *byteStream, size_t *len)
@@ -49,7 +47,7 @@ void stateArray(const unsigned char *byteStream, unsigned char state[4][4])
         }
     }
 }
-size_t read_file_to_byteStream(unsigned char *byteStream, unsigned char state[4][4])
+void read_file_to_byteStream(unsigned char *byteStream, unsigned char state[4][4])
 {
     FILE *file = fopen("input.txt", "rb");
     if(file==NULL)
@@ -69,10 +67,23 @@ size_t read_file_to_byteStream(unsigned char *byteStream, unsigned char state[4]
         len+=read;
     }
     fclose(file);
-    return len;
 }
 
-void decrypt(unsigned char state[4][4], unsigned char round_keys[240], size_t len) {
+void decrypt(unsigned char state[4][4], unsigned char round_keys[240])
+{
+    FILE *decrypted = fopen("output.txt", "r");
+
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        {
+            unsigned char val;
+            fscanf(decrypted, "%02x ", &val);
+            state[i][j] = val;
+        }
+    }
+
+    fclose(decrypted);
 
     printf("Last round (Decryption):\n");
     add_round_key(state, round_keys, 14);
@@ -87,7 +98,6 @@ void decrypt(unsigned char state[4][4], unsigned char round_keys[240], size_t le
         inv_shift_row(state);
         inv_substitute(state);
         add_round_key(state, round_keys, 0);
-        remove_padding(state[0], &len);
 
 
     unsigned char decryptedOutput[256];
@@ -100,31 +110,8 @@ void decrypt(unsigned char state[4][4], unsigned char round_keys[240], size_t le
 
 }
 
-int main()
+void encrypt(unsigned char state[4][4], unsigned char round_keys[])
 {
-    unsigned char byteStream[256];
-    unsigned char state[4][4];
-    unsigned char key[32];
-    unsigned char round_keys[240];
-
-    size_t len=read_file_to_byteStream(byteStream, state);
-
-    pad_bytes(byteStream, &len);
-
-    stateArray(byteStream, state);
-    key_generation(key);
-    key_expansion(key, round_keys);
-
-    printf("Before encryption: \n");
-    for(int i=0; i<4; i++)
-    {
-        for(int j=0; j<4; j++)
-        {
-            printf("%02x ", state[i][j]);
-        }
-        printf("\n");
-    }
-    //aes begins
     add_round_key(state, round_keys, 0);
 
     for(int round=1; round<14; round++)
@@ -141,9 +128,54 @@ int main()
     shift_row(state);
     add_round_key(state, round_keys, 14);
 
+    FILE *encrypted = fopen("output.txt", "w");
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+            fprintf(encrypted, "%02x ", state[i][j]);
+    }
+    fclose(encrypted);
+}
 
-    decrypt(state, round_keys, len);
-    printf("After decryption: \n");
+int main()
+{
+    unsigned char byteStream[256];
+    unsigned char state[4][4];
+    unsigned char key[32];
+    unsigned char round_keys[240];
+
+    read_file_to_byteStream(byteStream, state);
+
+    //pad_bytes(byteStream, &len);
+
+    stateArray(byteStream, state);
+    key_generation(key);
+    key_expansion(key, round_keys);
+
+    printf("Before encryption: \n");
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        {
+            printf("%02x ", state[i][j]);
+        }
+        printf("\n");
+    }
+
+    encrypt(state, round_keys);
+    printf("\nAfter encryption: \n");
+
+     for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        {
+            printf("%02x ", state[i][j]);
+        }
+        printf("\n");
+    }
+
+    decrypt(state, round_keys);
+    printf("\nAfter decryption: \n");
     for(int i=0; i<4; i++)
     {
         for(int j=0; j<4; j++)

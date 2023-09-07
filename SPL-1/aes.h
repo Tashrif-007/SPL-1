@@ -128,40 +128,6 @@ void inv_shift_row(unsigned char state[4][4])
     state[3][2] = temp;
 
 }
-/*void mix_col(unsigned char state[4][4])
-{
-    unsigned char res[4][4];
-
-    for(int j=0; j<4; j++)
-    {
-        for(int i=0; i<4; i++)
-        {
-            res[j][i]=0;
-            for(int k=0; k<4; k++)
-            {
-                unsigned char prod;
-                unsigned char res1 = state[i][j];
-                unsigned char res2 = mixColumn[k][i];
-
-                if(res2==0x02)
-                    prod = (res1<<1) ^ ((res1 & 0x80) ? 0x1b : 0x00);
-                else if(res2 == 0x03)
-                    prod = (res1<<1) ^ ((res1 & 0x80) ? 0x1b : 0x00) ^ res1;
-                else
-                    prod = res1;
-
-                res[j][i] ^= prod;
-            }
-
-        }
-    }
-
-    for(int i=0; i<4; i++)
-    {
-        for(int j=0; j<4; j++)
-            state[i][j] = res[i][j];
-    }
-}*/
 
 unsigned char galois(unsigned char x, unsigned char y)
 {
@@ -251,6 +217,7 @@ void perform_inv_mix(unsigned char col[])
              galois(res[1], 13)^
              galois(res[0], 11);
 }
+
 void invMixCol(unsigned char state[])
 {
     unsigned char col[4];
@@ -266,45 +233,6 @@ void invMixCol(unsigned char state[])
         state[j*4+i] = col[j];
     }
 }
-
-/*void inv_mix_col(unsigned char state[4][4])
-{
-    unsigned char res[4][4];
-
-    for(int j=0; j<4; j++)
-    {
-        for(int i=0; i<4; i++)
-        {
-            res[j][i]=0;
-            for(int k=0; k<4; k++)
-            {
-                unsigned char prod;
-                unsigned char res1 = state[i][j];
-                unsigned char res2 = inv_mixColumn[k][i];
-
-                if(res2==0x0e)
-                    prod = (res1<<1)^(res1<<3)^(res1<<2)^res1;
-                else if(res2==0x0b)
-                    prod = (res1<<3)^(res1<<1)^res1;
-                else if(res2==0x0d)
-                    prod = (res1<<3)^(res1<<2)^res1;
-                else if(res2==0x09)
-                    prod = (res1<<3)^res1;
-                else
-                    prod = res1;
-
-                res[j][i] ^= prod;
-            }
-
-        }
-    }
-
-    for(int i=0; i<4; i++)
-    {
-        for(int j=0; j<4; j++)
-            state[i][j] = res[i][j];
-    }
-}*/
 
 void key_generation(unsigned char key[32])
 {
