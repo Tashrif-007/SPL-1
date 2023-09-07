@@ -80,7 +80,7 @@ size_t read_file_to_byteStream(unsigned char *byteStream, unsigned char state[][
     return len;
 }
 
-void decrypt(unsigned char state[4][4], unsigned char round_keys[240], size_t len, size_t block_num)
+void decrypt(unsigned char state[][4][4], unsigned char round_keys[240], size_t len, size_t block_num)
 {
 
     printf("Last round (Decryption):\n");
@@ -103,10 +103,16 @@ void decrypt(unsigned char state[4][4], unsigned char round_keys[240], size_t le
         inv_substitute(state[i]);
         add_round_key(state[i], round_keys, 0);
     }
+    unsigned char output[len];
+
+    FILE *fp = fopen("original.txt", "wb");
+
+    fwrite(output, 1, len, fp);
+    fclose(fp);
 
 }
 
-void encrypt(unsigned char state[4][4], unsigned char round_keys[], size_t block_num)
+void encrypt(unsigned char state[][4][4], unsigned char round_keys[], size_t block_num)
 {
     for(size_t i=0; i<block_num; i++)
         add_round_key(state[i], round_keys, 0);
@@ -139,7 +145,6 @@ int main()
     unsigned char key[32];
     unsigned char round_keys[240];
     size_t block_count=0;
-
     size_t len = read_file_to_byteStream(byteStream, state, 16, &block_count);
 
     //pad_bytes(byteStream, &len);
