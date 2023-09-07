@@ -105,6 +105,18 @@ void decrypt(unsigned char state[][4][4], unsigned char round_keys[240], size_t 
     }
     unsigned char output[len];
 
+    size_t offset = 0;
+    for (size_t i = 0; i < block_num; i++)
+    {
+        for (size_t j = 0; j < 4; j++)
+        {
+            for (size_t k = 0; k < 4; k++)
+            {
+                output[offset++] = state[i][k][j];
+            }
+        }
+    }
+
     FILE *fp = fopen("original.txt", "wb");
 
     fwrite(output, 1, len, fp);
