@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include<stdlib.h>
+#include<time.h>
 
 unsigned char subs_box[16][16]={
 
@@ -236,6 +238,7 @@ void invMixCol(unsigned char state[4][4])
 
 void key_generation(unsigned char key[32])
 {
+    srand(time(NULL));
     for(int i=0; i<32; i++)
     {
         key[i] = rand()%256;
@@ -261,10 +264,15 @@ void key_expansion(unsigned char key[32], unsigned char roundKeys[240])
         if(key_len%32==0)
         {
             unsigned char tempVal = temp[0];
-            temp[0] = subs_box[temp[1]^rcons[round_num-1]];
-            temp[1] = subs_box[temp[2]];
-            temp[2] = subs_box[temp[3]];
-            temp[3] = subs_box[tempVal];
+            unsigned char tempXOR = temp[1]^rcons[round_num-1];
+
+            int row = (tempXOR>>4) & 0x0F;
+            int col = tempXOR & 0x0F;
+
+            temp[0] = subs_box[row][col];
+            temp[1] = subs_box[temp[1]>>4][temp[1]&0x0F];
+            temp[2] = subs_box[temp[2]>>4][temp[2] & 0x0F];
+            temp[3] = subs_box[tempVal>>4][tempVal & 0x0F];
 
             round_num++;
         }
