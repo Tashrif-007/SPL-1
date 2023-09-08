@@ -282,6 +282,15 @@ void key_expansion(unsigned char key[32], unsigned char roundKeys[240])
             key_len++;
         }
     }
+    FILE *keying = fopen("C:\\Users\\ASUS\\Desktop\\SPL-1\\SPL-1\\key\\key.txt", "wb");
+
+    if(keying==NULL)
+    {
+        printf("Error writing...\n");
+        exit(1);
+    }
+    fwrite(roundKeys, 1, key_len, keying);
+    fclose(keying);
 }
 
 void add_round_key(unsigned char state[4][4], unsigned char roundKeys[240], int round_num)
