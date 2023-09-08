@@ -54,7 +54,7 @@ void huffman() {
     FILE* file = fopen("input.txt", "r");
     if (!file) {
         printf("Unable to open the file.\n");
-        return 1;
+        exit(1);
     }
 
     int freq[256] = {0};
