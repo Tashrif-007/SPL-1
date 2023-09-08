@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "huffman.h"
 //#include <openssl/rand.h>
 #include "aes.h"
@@ -37,7 +38,7 @@ void remove_padding(unsigned char *byteStream, size_t *len)
     }
 }
 
-size_t read_file_to_byteStream(unsigned char *byteStream, unsigned char state[][4][4], size_t block_size, size_t *block_num, char filename[])
+size_t read_file(unsigned char *byteStream, unsigned char state[][4][4], size_t block_size, size_t *block_num, char filename[])
 {
     FILE *file = fopen(filename, "rb");
     if(file==NULL)
@@ -168,7 +169,7 @@ int menu()
 {
     int choice;
     printf("AES Encryption & Decryption:\nEnter your choice:\n");
-    printf("1.Encrypt\n2.Decrypt\n3.Exit\n");
+    printf("1.Encrypt\n2.Decrypt\n3.File path\n4.Exit\n");
     scanf("%d", &choice);
     return choice;
 }
@@ -184,16 +185,17 @@ int main(int argC, char *argV[])
     unsigned char state[mx][4][4];
     unsigned char key[32];
     unsigned char round_keys[240];
+    char filename[mx];
     size_t block_count=0;
     int choice;
 
-
+    strcpy(filename, argV[1]);
     do{
         choice = menu();
         switch(choice){
         case 1:
             printf("Encrypting...\n");
-            size_t len = read_file_to_byteStream(byteStream, state, 16, &block_count, argV[1]);
+            size_t len = read_file(byteStream, state, 16, &block_count, filename);
             key_create(key, round_keys);
 
             printf("Before encryption: \n");
@@ -207,7 +209,7 @@ int main(int argC, char *argV[])
                 }
                 printf("\n\n");
             }
-            encrypt(state, round_keys, block_count, len, argV[1]);
+            encrypt(state, round_keys, block_count, len, filename);
 
             for(size_t i=0; i<block_count; i++)
             {
@@ -222,15 +224,20 @@ int main(int argC, char *argV[])
             break;
         case 2:
             printf("Decrypting...\n");
-            decrypt(state, round_keys, len, block_count, argV[1]);
+            decrypt(state, round_keys, len, block_count, filename);
             break;
         case 3:
+            printf("Enter file path: \n");
+            scanf("%s", filename);
+            break;
+        case 4:
             printf("Exiting\n");
             break;
         default:
             printf("Invalid choice\n");
+            break;
         }
-    }while(choice!=3);
+    }while(choice!=4);
 
 
     return 0;
