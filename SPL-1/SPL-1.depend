@@ -35,18 +35,18 @@
 	<stdlib.h>
 	<time.h>
 
-1694259790 source:c:\users\asus\desktop\spl-1\spl-1\main.c
+1694293368 source:c:\users\asus\desktop\spl-1\spl-1\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	"huffman.h"
 	"aes.h"
 
-1694178229 c:\users\asus\desktop\spl-1\spl-1\huffman.h
+1694294528 c:\users\asus\desktop\spl-1\spl-1\huffman.h
 	<stdio.h>
 	<stdlib.h>
 
-1694261024 c:\users\asus\desktop\spl-1\spl-1\aes.h
+1694261504 c:\users\asus\desktop\spl-1\spl-1\aes.h
 	<stdio.h>
 	<stdlib.h>
 	<time.h>

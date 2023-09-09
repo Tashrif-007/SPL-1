@@ -5,8 +5,7 @@
 //#include <openssl/rand.h>
 #include "aes.h"
 #define key_size 32
-#define mx 10000
-//size_t offset;
+#define mx 1000
 
 void pad_bytes(unsigned char *byteStream, size_t *len)
 {
@@ -61,8 +60,9 @@ void read_key(unsigned char round_keys[], int key_len, char filename[])
     FILE *fp = fopen(keyname, "rb");
 
     fread(round_keys, 1, key_len, fp);
-    fclose(fp);
     remove(keyname);
+    fclose(fp);
+
 }
 
 size_t read_file(unsigned char *byteStream, unsigned char state[][4][4], size_t block_size, size_t *block_num, char filename[])
@@ -202,11 +202,12 @@ int key_create(unsigned char key[], unsigned char round_keys[], char filename[])
     return key_len;
 }
 
+
 int menu()
 {
     int choice;
     printf("AES Encryption & Decryption:\n\nEnter your choice:\n");
-    printf("1.Encryption\n2.Decryption\n3.Exit\n");
+    printf("1.Encryption\n2.Decryption\n3.Compress\n4.Decompress\n5.Exit\n");
     scanf("%d", &choice);
     return choice;
 }
@@ -282,13 +283,23 @@ int main()
             break;
 
         case 3:
+            printf("Enter file path:\n");
+            scanf("%s", filename);
+            init_huffman(filename, 1);
+            break;
+        case 4:
+            printf("Enter file path: \n");
+            scanf("%s", filename);
+            init_huffman(filename, 2);
+            break;
+        case 5:
             printf("Exiting\n");
             break;
         default:
             printf("Invalid choice\n");
             break;
         }
-    }while(choice!=3);
+    }while(choice!=5);
 
 
     return 0;
