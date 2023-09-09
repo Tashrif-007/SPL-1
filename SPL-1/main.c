@@ -206,7 +206,8 @@ int key_create(unsigned char key[], unsigned char round_keys[], char filename[])
 int menu()
 {
     int choice;
-    printf("AES Encryption & Decryption:\n\nEnter your choice:\n");
+    printf("FILECRYPTOZIPPER\n");
+    printf("------------------\n\n");
     printf("1.Encryption\n2.Decryption\n3.Compress\n4.Decompress\n5.Exit\n");
     scanf("%d", &choice);
     return choice;
@@ -233,30 +234,10 @@ int main()
 
             size_t len = read_file(byteStream, state, 16, &block_count, filename);
             int key_len = key_create(key, round_keys, filename);
-            //debug
-            for(size_t i = 0; i<block_count; i++)
-            {
-                for(int j=0; j<4; j++)
-                {
-                    for(int k=0; k<4; k++)
-                        printf("%02x ", state[i][j][k]);
-                    printf("\n");
-                }
-                printf("\n\n");
-            }
+
             encrypt(state, round_keys, block_count, len, filename);
 
             printf("Encryption Done!\n\n");
-            for(size_t i = 0; i<block_count; i++)
-            {
-                for(int j=0; j<4; j++)
-                {
-                    for(int k=0; k<4; k++)
-                        printf("%02x ", state[i][j][k]);
-                    printf("\n");
-                }
-                printf("\n\n");
-            }
 
             break;
 
@@ -266,17 +247,7 @@ int main()
 
             read_file(byteStream, state, 16, &block_count, filename);
             read_key(round_keys, key_len, filename);
-            //debug
-            for(size_t i = 0; i<block_count; i++)
-            {
-                for(int j=0; j<4; j++)
-                {
-                    for(int k=0; k<4; k++)
-                        printf("%02x ", state[i][j][k]);
-                    printf("\n");
-                }
-                printf("\n\n");
-            }
+
             decrypt(state, round_keys, len, block_count, filename);
 
             printf("Decryption Done!!\n\n");
@@ -286,11 +257,13 @@ int main()
             printf("Enter file path:\n");
             scanf("%s", filename);
             init_huffman(filename, 1);
+            printf("Compression Done\n");
             break;
         case 4:
             printf("Enter file path: \n");
             scanf("%s", filename);
             init_huffman(filename, 2);
+            printf("Decompression done\n");
             break;
         case 5:
             printf("Exiting\n");
