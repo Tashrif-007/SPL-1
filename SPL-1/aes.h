@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<time.h>
 
+
 unsigned char subs_box[16][16]={
 
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -245,7 +246,7 @@ void key_generation(unsigned char key[32])
     }
 }
 
-void key_expansion(unsigned char key[32], unsigned char roundKeys[240])
+int key_expansion(unsigned char key[32], unsigned char roundKeys[240], char filename[])
 {
     for(int i=0; i<32; i++)
         roundKeys[i] = key[i];
@@ -282,7 +283,25 @@ void key_expansion(unsigned char key[32], unsigned char roundKeys[240])
             key_len++;
         }
     }
-    FILE *keying = fopen("C:\\Users\\ASUS\\Desktop\\SPL-1\\SPL-1\\key\\key.txt", "wb");
+    char keyname[1000];
+    strcpy(keyname, filename);
+
+    for(int i=0; i<strlen(keyname); i++)
+    {
+        if(keyname[i]=='.')
+        {
+            keyname[i]='k';
+            keyname[i+1]='e';
+            keyname[i+2]='y';
+            keyname[i+3]='.';
+            keyname[i+4]='t';
+            keyname[i+5]='x';
+            keyname[i+6]='t';
+            break;
+        }
+    }
+
+    FILE *keying = fopen(keyname, "wb");
 
     if(keying==NULL)
     {
@@ -291,6 +310,7 @@ void key_expansion(unsigned char key[32], unsigned char roundKeys[240])
     }
     fwrite(roundKeys, 1, key_len, keying);
     fclose(keying);
+    return key_len;
 }
 
 void add_round_key(unsigned char state[4][4], unsigned char roundKeys[240], int round_num)
