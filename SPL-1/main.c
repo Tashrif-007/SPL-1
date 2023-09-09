@@ -189,7 +189,7 @@ void encrypt(unsigned char state[][4][4], unsigned char round_keys[], size_t blo
         printf("Error writing file\n");
         exit(1);
     }
-    fwrite(output, 1, len, encrypted);
+    fwrite(output, 1, offset, encrypted);
     fclose(encrypted);
 }
 
