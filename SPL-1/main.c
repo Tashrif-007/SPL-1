@@ -5,7 +5,7 @@
 //#include <openssl/rand.h>
 #include "aes.h"
 #define key_size 32
-#define mx 100
+#define mx 10000
 
 void pad_bytes(unsigned char *byteStream, size_t *len)
 {
@@ -121,7 +121,6 @@ void decrypt(unsigned char state[][4][4], unsigned char round_keys[240], size_t 
 
     fwrite(output, 1, len, fp);
     fclose(fp);
-
 }
 
 void encrypt(unsigned char state[][4][4], unsigned char round_keys[], size_t block_num, size_t len, char filename[])
@@ -169,19 +168,14 @@ int menu()
 {
     int choice;
     printf("AES Encryption & Decryption:\nEnter your choice:\n");
-    printf("1.Encrypt\n2.Decrypt\n3.File path\n4.Exit\n");
+    printf("1.File path\n2.Encrypt\n3.Decrypt\n4.Exit\n");
     scanf("%d", &choice);
     return choice;
 }
 
-int main(int argC, char *argV[])
+int main()
 {
-    if(argC==1)
-    {
-        printf("File path missing\n");
-        exit(1);
-    }
-    unsigned char byteStream[256];
+    unsigned char byteStream[mx];
     unsigned char state[mx][4][4];
     unsigned char key[32];
     unsigned char round_keys[240];
@@ -189,44 +183,29 @@ int main(int argC, char *argV[])
     size_t block_count=0;
     int choice;
 
-    strcpy(filename, argV[1]);
+
     do{
         choice = menu();
         switch(choice){
-        case 1:
-            printf("Encrypting...\n");
+        case 2:
+            printf("Encrypting...\n\n");
+
             size_t len = read_file(byteStream, state, 16, &block_count, filename);
             key_create(key, round_keys);
 
-            printf("Before encryption: \n");
-            for(size_t i=0; i<block_count; i++)
-            {
-                for(int j=0; j<4; j++)
-                {
-                    for(int k=0; k<4; k++)
-                        printf("%02x ", state[i][j][k]);
-                    printf("\n");
-                }
-                printf("\n\n");
-            }
             encrypt(state, round_keys, block_count, len, filename);
 
-            for(size_t i=0; i<block_count; i++)
-            {
-                for(int j=0; j<4; j++)
-                {
-                    for(int k=0; k<4; k++)
-                        printf("%02x ", state[i][j][k]);
-                    printf("\n");
-                }
-                printf("\n\n");
-            }
-            break;
-        case 2:
-            printf("Decrypting...\n");
-            decrypt(state, round_keys, len, block_count, filename);
+            printf("Encryption Done!\n\n");
+
             break;
         case 3:
+            printf("Decrypting...\n");
+
+            decrypt(state, round_keys, len, block_count, filename);
+
+            printf("Decryption Done!!\n\n");
+            break;
+        case 1:
             printf("Enter file path: \n");
             scanf("%s", filename);
             break;

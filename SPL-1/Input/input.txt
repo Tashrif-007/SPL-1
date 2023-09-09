@@ -1,2 +1,1 @@
-my name is tashrif.
-I am excited for this project!!
+hello my name is tashrifthis is my spl project involving AES encryption and Huffman compression
