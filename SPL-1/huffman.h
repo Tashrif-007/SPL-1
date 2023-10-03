@@ -35,6 +35,39 @@ void compress(struct node* root, char code[], int top, char *res[])
     }
 }
 
+// void write_file(char filename[], char *res[])
+// {
+//     FILE *input = fopen(filename, "r");
+//     char output[1000];
+//     strcpy(output, filename);
+
+//     for(int i=0; i<strlen(filename); i++)
+//     {
+//         if(output[i]=='.')
+//         {
+//             output[i]='o';
+//             output[i+1]='u';
+//             output[i+2]='t';
+//             output[i+3]='.';
+//             output[i+4]='t';
+//             output[i+5]='x';
+//             output[i+6]='t';
+//             output[i+7]='\0';
+//             break;
+//         }
+//     }
+
+//     FILE *out = fopen(output, "wb");
+//     char bit;
+//     while((bit=fgetc(input))!=EOF)
+//     {
+//         // fprintf(out, "%s", res[(int)bit]);
+//         fwrite(res[(int)bit], 1, , out);
+//     }
+//     fclose(input);
+//     fclose(out);
+// }
+
 void write_file(char filename[], char *res[])
 {
     FILE *input = fopen(filename, "r");
@@ -57,16 +90,49 @@ void write_file(char filename[], char *res[])
         }
     }
 
-    FILE *out = fopen(output, "w");
-    char bit;
-    while((bit=fgetc(input))!=EOF)
+    FILE *out = fopen(output, "wb"); // Open the output file in binary write mode.
+    if (!out)
     {
-        fprintf(out, "%s", res[(int)bit]);
+        printf("Unable to open the output file.\n");
+        exit(1);
     }
+
+    char buffer = 0; // Buffer to store bits before writing them as bytes.
+    int buffer_count = 0; // Number of bits in the buffer.
+
+    char bit;
+    while((bit = fgetc(input)) != EOF)
+    {
+        // Append the bits from the code to the buffer.
+        char *code = res[(int)bit];
+        int code_len = strlen(code);
+        for (int i = 0; i < code_len; i++)
+        {
+            if (code[i] == '1')
+            {
+                buffer |= (1 << (7 - buffer_count)); // Set the corresponding bit in the buffer.
+            }
+            buffer_count++;
+
+            // If the buffer is full, write it to the output file as a byte.
+            if (buffer_count == 8)
+            {
+                fwrite(&buffer, sizeof(char), 1, out);
+                buffer = 0;
+                buffer_count = 0;
+            }
+        }
+    }
+
+    // If there are remaining bits in the buffer, write them as a byte.
+    if (buffer_count > 0)
+    {
+        fwrite(&buffer, sizeof(char), 1, out);
+    }
+
     fclose(input);
     fclose(out);
 }
-
 void write_array(char input[], char *res[])
 {
     FILE *fp = fopen(input, "wb");
