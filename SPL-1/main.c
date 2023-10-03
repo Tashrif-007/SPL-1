@@ -60,9 +60,8 @@ void read_key(unsigned char round_keys[], int key_len, char filename[])
     FILE *fp = fopen(keyname, "rb");
 
     fread(round_keys, 1, key_len, fp);
-    remove(keyname);
     fclose(fp);
-
+    remove(keyname);
 }
 
 size_t read_file(unsigned char *byteStream, unsigned char state[][4][4], size_t block_size, size_t *block_num, char filename[])

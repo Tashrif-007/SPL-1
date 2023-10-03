@@ -170,16 +170,16 @@ struct node* make_tree(char input[])
 
         fclose(file);
 
-        int t = 0;
+        int unique = 0;
         for (int i = 0; i < 256; i++)
         {
             if (freq[i] > 0)
             {
-                t++;
+                unique++;
             }
         }
 
-        struct node* arr[t];
+        struct node* arr[unique];
 
         int idx = 0;
         for (int i = 0; i < 256; i++)
@@ -191,9 +191,9 @@ struct node* make_tree(char input[])
             }
         }
 
-        b_sort(arr, t);
+        b_sort(arr, unique);
 
-        while (t > 1)
+        while (unique > 1)
         {
             struct node* huff1 = arr[0];
             struct node* huff2 = arr[1];
@@ -203,12 +203,12 @@ struct node* make_tree(char input[])
 
             arr[0] = newHuff;
 
-            for (int i = 1; i < t - 1; i++)
+            for (int i = 1; i < unique - 1; i++)
             {
                 arr[i] = arr[i + 1];
             }
-            t--;
-            b_sort(arr, t);
+            unique--;
+            b_sort(arr, unique);
         }
         return arr[0];
 }
