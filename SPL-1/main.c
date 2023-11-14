@@ -258,15 +258,18 @@ int main()
             init_huffman(filename, 1);
             printf("Compression Done\n");
             break;
+
         case 4:
             printf("Enter file path: \n");
             scanf("%s", filename);
             init_huffman(filename, 2);
             printf("Decompression done\n");
             break;
+
         case 5:
             printf("Exiting\n");
             break;
+
         default:
             printf("Invalid choice\n");
             break;

@@ -34,7 +34,7 @@ void compress(struct node* root, char code[], int top, char *res[])
         strcpy(res[idx], code);
     }
 }
-
+//without byte mode
 // void write_file(char filename[], char *res[])
 // {
 //     FILE *input = fopen(filename, "r");
@@ -90,31 +90,31 @@ void write_file(char filename[], char *res[])
         }
     }
 
-    FILE *out = fopen(output, "wb"); // Open the output file in binary write mode.
+    FILE *out = fopen(output, "wb"); 
     if (!out)
     {
         printf("Unable to open the output file.\n");
         exit(1);
     }
 
-    char buffer = 0; // Buffer to store bits before writing them as bytes.
-    int buffer_count = 0; // Number of bits in the buffer.
+    char buffer = 0; 
+    int buffer_count = 0; 
 
     char bit;
-    while((bit = fgetc(input)) != EOF)
+    while((bit=fgetc(input))!=EOF)
     {
-        // Append the bits from the code to the buffer.
+
         char *code = res[(int)bit];
         int code_len = strlen(code);
         for (int i = 0; i < code_len; i++)
         {
             if (code[i] == '1')
             {
-                buffer |= (1 << (7 - buffer_count)); // Set the corresponding bit in the buffer.
+                buffer |= (1 << (7 - buffer_count)); 
             }
             buffer_count++;
 
-            // If the buffer is full, write it to the output file as a byte.
+         
             if (buffer_count == 8)
             {
                 fwrite(&buffer, sizeof(char), 1, out);
@@ -124,7 +124,6 @@ void write_file(char filename[], char *res[])
         }
     }
 
-    // If there are remaining bits in the buffer, write them as a byte.
     if (buffer_count > 0)
     {
         fwrite(&buffer, sizeof(char), 1, out);
@@ -150,43 +149,66 @@ void write_array(char input[], char *res[])
 
 void decompress(char output[], struct node* root)
 {
-    FILE *out = fopen(output, "r");
-    char result[1000];
-        strcpy(result, output);
+    FILE *out = fopen(output, "rb");  // Open the file in binary mode
+    if (!out)
+    {
+        printf("Unable to open the compressed file.\n");
+        exit(1);
+    }
 
-        for(int i=0; i<strlen(output); i++)
+    char result[1000];
+    strcpy(result, output);
+
+    for (int i = 0; i < strlen(output); i++)
+    {
+        if (result[i] == '.')
         {
-            if(result[i]=='.')
-            {
-                result[i]='d';
-                result[i+1]='e';
-                result[i+2]='c';
-                result[i+3]='o';
-                result[i+4]='m';
-                result[i+5]='.';
-                result[i+6]='t';
-                result[i+7]='x';
-                result[i+8]='t';
-                result[i+9]='\0';
-                break;
-            }
+            result[i] = 'd';
+            result[i + 1] = 'e';
+            result[i + 2] = 'c';
+            result[i + 3] = 'o';
+            result[i + 4] = 'm';
+            result[i + 5] = '.';
+            result[i + 6] = 't';
+            result[i + 7] = 'x';
+            result[i + 8] = 't';
+            result[i + 9] = '\0';
+            break;
         }
+    }
+
     FILE *finall = fopen(result, "w");
+    if (!finall)
+    {
+        printf("Unable to open the output file for decompression.\n");
+        exit(1);
+    }
+
     char bit;
     struct node *curr = root;
 
-    while((bit=fgetc(out))!=EOF)
+    while (fread(&bit, sizeof(char), 1, out) == 1)  // Read one byte at a time
     {
-        if(bit=='0' && curr->left)
-            curr = curr->left;
-        if(bit=='1' && curr->right)
-            curr = curr->right;
-        if(!curr->left && !curr->right)
+        for (int i = 0; i < 8; i++)  // Process each bit in the byte
         {
-            fprintf(finall, "%c", curr->c);
-            curr = root;
+            char mask = 1 << (7 - i);
+            if ((bit & mask) == mask)
+            {
+                curr = curr->right;
+            }
+            else
+            {
+                curr = curr->left;
+            }
+
+            if (!curr->left && !curr->right)
+            {
+                fprintf(finall, "%c", curr->c);
+                curr = root;
+            }
         }
     }
+
     fclose(out);
     fclose(finall);
 }
