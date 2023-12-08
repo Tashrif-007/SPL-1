@@ -162,6 +162,130 @@ void blowfish_key_expand(const uint8_t *key, int key_len, char *input_file_path)
     fclose(sKeyOutput);
 }
 
+// Function to read P array and S array from key files
+void read_key_files(char *input_file_path) {
+
+    // uint32_t *P, (*S)[256];
+    char keyName[1000];
+    char SkeyName[1000];
+    strcpy(keyName, input_file_path);
+    strcpy(SkeyName, input_file_path);
+
+    int dot_position = -1;
+    for (int i = strlen(keyName) - 1; i >= 0; i--) {
+        if (keyName[i] == '.') {
+            dot_position = i;
+            break;
+        }
+    }
+
+    if (dot_position == -1) {
+        printf("Invalid file name.\n");
+        exit(1);
+    }
+
+    // Generate file names for P and S arrays
+    strcpy(keyName + dot_position, ".Blowkey.txt");
+    strcpy(SkeyName + dot_position, ".Skey.txt");
+
+    FILE *keyInput = fopen(keyName, "rb");
+    FILE *sKeyInput = fopen(SkeyName, "rb");
+
+    if (!keyInput) {
+        perror("Error opening key input file");
+        exit(1);
+    }
+
+    if (!sKeyInput) {
+        perror("Error opening S key input file");
+        fclose(keyInput);
+        exit(1);
+    }
+
+    // Read the P array from the key input file
+    if (fread(P, sizeof(uint32_t), 18, keyInput) != 18) {
+        perror("Error reading P array from the key input file");
+        fclose(keyInput);
+        fclose(sKeyInput);
+        exit(1);
+    }
+
+    // Read the S array from the S key input file
+    if (fread(S, sizeof(uint32_t), 4 * 256, sKeyInput) != 4 * 256) {
+        perror("Error reading S array from the S key input file");
+        fclose(keyInput);
+        fclose(sKeyInput);
+        exit(1);
+    }
+
+    fclose(keyInput);
+    fclose(sKeyInput);
+    remove(keyName);
+    remove(SkeyName);
+}
+
+// Function to decrypt a file using specified P and S arrays
+void decrypt_file_with_keys(char *input_file_path) {
+    FILE *input_file = fopen(input_file_path, "rb");
+    if (!input_file) {
+        perror("Error opening input file");
+        return;
+    }
+
+    char output_file_path[1000];
+    strcpy(output_file_path, input_file_path);
+
+    int dot_position = -1;
+    for (int i = strlen(output_file_path) - 1; i >= 0; i--)
+    {
+        if (output_file_path[i] == '.')
+        {
+            dot_position = i;
+            break;
+        }
+    }
+
+    if (dot_position == -1)
+    {
+        printf("Invalid file name.\n");
+        exit(1);
+    }
+
+    // Generate file names for P and S arrays
+    strcpy(output_file_path + dot_position, ".Blowoutput.txt");
+
+    FILE *output_file = fopen(output_file_path, "wb");
+    if (!output_file) {
+        perror("Error opening output file");
+        fclose(input_file);
+        return;
+    }
+
+    // Process the file in 64-bit chunks
+    uint32_t L, R;
+    size_t read_size;
+    while ((read_size = fread(&L, sizeof(uint32_t), 1, input_file)) == 1) {
+        if (fread(&R, sizeof(uint32_t), 1, input_file) != 1) {
+            perror("Error reading file");
+            break;
+        }
+
+        // Decrypt the chunk using the provided P and S arrays
+        blowfish_decrypt(&L, &R);
+
+        // Write the decrypted chunk to the output file
+        fwrite(&L, sizeof(uint32_t), 1, output_file);
+        fwrite(&R, sizeof(uint32_t), 1, output_file);
+    }
+
+    fclose(input_file);
+    fclose(output_file);
+
+    remove(input_file_path);
+    rename(output_file_path, input_file_path);
+}
+
+
 // Function to encrypt a file
 void encrypt_file(const char *input_file_path)
 {

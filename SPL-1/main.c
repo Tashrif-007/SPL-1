@@ -217,6 +217,15 @@ int menu()
     return choice;
 }
 
+int decrypt_menu()
+{
+    int choice;
+    printf("Which Algorithm?\n\n");
+    printf("1.AES\n2.BlowFish\n");
+    scanf("%d", &choice);
+    return choice;
+}
+
 int encrypt_menu()
 {
     int choice;
@@ -233,8 +242,8 @@ int main()
     unsigned char key[32];
     unsigned char round_keys[240];
     char filename[mx] = "null";
-    size_t block_count = 0,len;
-    int choice,key_len, encrypt_choice;
+    size_t block_count = 0, len;
+    int choice, key_len, encrypt_choice, decrypt_choice;
 
     do
     {
@@ -256,7 +265,7 @@ int main()
                 encrypt(state, round_keys, block_count, len, filename);
             }
 
-            else if(encrypt_choice==2)
+            else if (encrypt_choice == 2)
             {
                 blow_main(filename);
             }
@@ -265,14 +274,24 @@ int main()
             break;
 
         case 2:
+            decrypt_choice = decrypt_menu();
+
             printf("Enter file path: \n");
             scanf("%s", filename);
 
-            read_file(byteStream, state, 16, &block_count, filename);
-            read_key(round_keys, key_len, filename);
+            if (decrypt_choice == 1)
+            {
+                read_file(byteStream, state, 16, &block_count, filename);
+                read_key(round_keys, key_len, filename);
 
-            decrypt(state, round_keys, len, block_count, filename);
+                decrypt(state, round_keys, len, block_count, filename);
+            }
 
+            else if(decrypt_choice==2)
+            {
+                read_key_files(filename);
+                decrypt_file_with_keys(filename);
+            }
             printf("Decryption Done!!\n\n");
             break;
 
