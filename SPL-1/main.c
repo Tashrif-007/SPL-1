@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "huffman.h"
-//#include "blowfish.h"
+#include "blowfish.h"
 #include "aes.h"
 #define key_size 32
 #define mx 1000
@@ -234,7 +234,7 @@ int main()
     unsigned char round_keys[240];
     char filename[mx] = "null";
     size_t block_count = 0,len;
-    int choice,key_len;
+    int choice,key_len, encrypt_choice;
 
     do
     {
@@ -243,10 +243,10 @@ int main()
         switch (choice)
         {
         case 1:
+            encrypt_choice = encrypt_menu();
+
             printf("Enter file path: \n");
             scanf("%s", filename);
-
-            int encrypt_choice = encrypt_menu();
 
             if (encrypt_choice == 1)
             {
@@ -258,7 +258,7 @@ int main()
 
             else if(encrypt_choice==2)
             {
-                
+                blow_main(filename);
             }
             printf("Encryption Done!\n\n");
 
