@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include<string.h>
 
 struct node
 {
@@ -34,39 +35,7 @@ void compress(struct node* root, char code[], int top, char *res[])
         strcpy(res[idx], code);
     }
 }
-//without byte mode
-// void write_file(char filename[], char *res[])
-// {
-//     FILE *input = fopen(filename, "r");
-//     char output[1000];
-//     strcpy(output, filename);
 
-//     for(int i=0; i<strlen(filename); i++)
-//     {
-//         if(output[i]=='.')
-//         {
-//             output[i]='o';
-//             output[i+1]='u';
-//             output[i+2]='t';
-//             output[i+3]='.';
-//             output[i+4]='t';
-//             output[i+5]='x';
-//             output[i+6]='t';
-//             output[i+7]='\0';
-//             break;
-//         }
-//     }
-
-//     FILE *out = fopen(output, "wb");
-//     char bit;
-//     while((bit=fgetc(input))!=EOF)
-//     {
-//         // fprintf(out, "%s", res[(int)bit]);
-//         fwrite(res[(int)bit], 1, , out);
-//     }
-//     fclose(input);
-//     fclose(out);
-// }
 
 void write_file(char filename[], char *res[])
 {
@@ -149,7 +118,7 @@ void write_array(char input[], char *res[])
 
 void decompress(char output[], struct node* root)
 {
-    FILE *out = fopen(output, "rb");  // Open the file in binary mode
+    FILE *out = fopen(output, "rb");  
     if (!out)
     {
         printf("Unable to open the compressed file.\n");
@@ -159,23 +128,23 @@ void decompress(char output[], struct node* root)
     char result[1000];
     strcpy(result, output);
 
-    for (int i = 0; i < strlen(output); i++)
+    int dot_position = -1;
+    for (int i = strlen(result) - 1; i >= 0; i--)
     {
         if (result[i] == '.')
         {
-            result[i] = 'd';
-            result[i + 1] = 'e';
-            result[i + 2] = 'c';
-            result[i + 3] = 'o';
-            result[i + 4] = 'm';
-            result[i + 5] = '.';
-            result[i + 6] = 't';
-            result[i + 7] = 'x';
-            result[i + 8] = 't';
-            result[i + 9] = '\0';
+            dot_position = i;
             break;
         }
     }
+
+    if (dot_position == -1)
+    {
+        printf("Invalid compressed file name.\n");
+        exit(1);
+    }
+
+    strcpy(result + dot_position, ".decompressed.txt");
 
     FILE *finall = fopen(result, "w");
     if (!finall)
@@ -186,10 +155,11 @@ void decompress(char output[], struct node* root)
 
     char bit;
     struct node *curr = root;
+    int bitsRead = 0;
 
-    while (fread(&bit, sizeof(char), 1, out) == 1)  // Read one byte at a time
+    while (fread(&bit, sizeof(char), 1, out) == 1)  
     {
-        for (int i = 0; i < 8; i++)  // Process each bit in the byte
+        for (int i = 0; i < 8; i++)  
         {
             char mask = 1 << (7 - i);
             if ((bit & mask) == mask)
@@ -201,17 +171,25 @@ void decompress(char output[], struct node* root)
                 curr = curr->left;
             }
 
+            bitsRead++;
+
             if (!curr->left && !curr->right)
             {
                 fprintf(finall, "%c", curr->c);
                 curr = root;
             }
         }
+        
+        // Check for the end of the file before reading the next byte
+        if (feof(out))
+            break;
     }
 
     fclose(out);
     fclose(finall);
 }
+
+
 
 void b_sort(struct node* arr[], int t)
 {

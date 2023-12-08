@@ -2,38 +2,44 @@
 #include <stdlib.h>
 #include <string.h>
 #include "huffman.h"
-//#include <openssl/rand.h>
+//#include "blowfish.h"
 #include "aes.h"
 #define key_size 32
 #define mx 1000
 
 void pad_bytes(unsigned char *byteStream, size_t *len)
 {
-    size_t padLen = 16-(*len % 16);
-    for(size_t i=0; i<padLen; i++)
+    size_t padLen = 16 - (*len % 16);
+    for (size_t i = 0; i < padLen; i++)
     {
-        byteStream[*len +i] = (unsigned char)padLen;
+        byteStream[*len + i] = (unsigned char)padLen;
     }
-    *len+=padLen;
+    *len += padLen;
 }
 
 void remove_padding(unsigned char *byteStream, size_t *len)
 {
-    if (*len == 0) {
+    if (*len == 0)
+    {
         return;
     }
 
     unsigned char padLen = byteStream[*len - 1];
 
-    if (padLen <= 16 && padLen > 0) {
-        for (size_t i = *len - padLen; i < *len; i++) {
-            if (byteStream[i] != padLen) {
+    if (padLen <= 16 && padLen > 0)
+    {
+        for (size_t i = *len - padLen; i < *len; i++)
+        {
+            if (byteStream[i] != padLen)
+            {
                 printf("Invalid padding!\n");
                 return;
             }
         }
         *len -= padLen;
-    } else {
+    }
+    else
+    {
         printf("Invalid padding value!\n");
     }
 }
@@ -43,17 +49,17 @@ void read_key(unsigned char round_keys[], int key_len, char filename[])
     char keyname[mx];
     strcpy(keyname, filename);
 
-    for(int i=0; i<strlen(keyname); i++)
+    for (int i = 0; i < strlen(keyname); i++)
     {
-        if(keyname[i]=='.')
+        if (keyname[i] == '.')
         {
-            keyname[i]='k';
-            keyname[i+1]='e';
-            keyname[i+2]='y';
-            keyname[i+3]='.';
-            keyname[i+4]='t';
-            keyname[i+5]='x';
-            keyname[i+6]='t';
+            keyname[i] = 'k';
+            keyname[i + 1] = 'e';
+            keyname[i + 2] = 'y';
+            keyname[i + 3] = '.';
+            keyname[i + 4] = 't';
+            keyname[i + 5] = 'x';
+            keyname[i + 6] = 't';
             break;
         }
     }
@@ -67,49 +73,49 @@ void read_key(unsigned char round_keys[], int key_len, char filename[])
 size_t read_file(unsigned char *byteStream, unsigned char state[][4][4], size_t block_size, size_t *block_num, char filename[])
 {
     FILE *file = fopen(filename, "rb");
-    if(file==NULL)
+    if (file == NULL)
     {
         printf("Error reading file");
         exit(1);
     }
 
-    size_t len=0;
-    size_t k=0;
-    *block_num=0;
+    size_t len = 0;
+    size_t k = 0;
+    *block_num = 0;
 
-    while(1)
+    while (1)
     {
-        size_t read = fread(byteStream+len, 1, block_size, file);
-        if(read==0)
+        size_t read = fread(byteStream + len, 1, block_size, file);
+        if (read == 0)
             break;
 
-        len+=read;
+        len += read;
         (*block_num)++;
 
-        if(*block_num>0)
+        if (*block_num > 0)
         {
-            for(int i=0; i<4; i++)
+            for (int i = 0; i < 4; i++)
             {
-                for(int j=0; j<4; j++)
+                for (int j = 0; j < 4; j++)
                 {
-                    state[*block_num-1][j][i] = byteStream[k++];
+                    state[*block_num - 1][j][i] = byteStream[k++];
                 }
             }
         }
     }
     fclose(file);
     return len;
-
 }
 
 void decrypt(unsigned char state[][4][4], unsigned char round_keys[240], size_t len, size_t block_num, char filename[])
 {
 
-    for(size_t i=0; i<block_num; i++)
+    for (size_t i = 0; i < block_num; i++)
         add_round_key(state[i], round_keys, 14);
 
-    for (int round = 13; round >= 1; round--) {
-        for(size_t i=0; i<block_num; i++)
+    for (int round = 13; round >= 1; round--)
+    {
+        for (size_t i = 0; i < block_num; i++)
         {
             inv_shift_row(state[i]);
             inv_substitute(state[i]);
@@ -117,7 +123,7 @@ void decrypt(unsigned char state[][4][4], unsigned char round_keys[240], size_t 
             invMixCol(state[i]);
         }
     }
-    for(size_t i=0; i<block_num; i++)
+    for (size_t i = 0; i < block_num; i++)
     {
         inv_shift_row(state[i]);
         inv_substitute(state[i]);
@@ -138,7 +144,7 @@ void decrypt(unsigned char state[][4][4], unsigned char round_keys[240], size_t 
     }
 
     FILE *fp = fopen(filename, "wb");
-    if(fp==NULL)
+    if (fp == NULL)
     {
         printf("Error writing file\n");
         exit(1);
@@ -150,12 +156,12 @@ void decrypt(unsigned char state[][4][4], unsigned char round_keys[240], size_t 
 
 void encrypt(unsigned char state[][4][4], unsigned char round_keys[], size_t block_num, size_t len, char filename[])
 {
-    for(size_t i=0; i<block_num; i++)
+    for (size_t i = 0; i < block_num; i++)
         add_round_key(state[i], round_keys, 0);
 
-    for(int round=1; round<14; round++)
+    for (int round = 1; round < 14; round++)
     {
-        for(size_t i=0; i<block_num; i++)
+        for (size_t i = 0; i < block_num; i++)
         {
             substitute(state[i]);
             shift_row(state[i]);
@@ -164,7 +170,7 @@ void encrypt(unsigned char state[][4][4], unsigned char round_keys[], size_t blo
         }
     }
 
-    for(size_t i=0; i<block_num; i++)
+    for (size_t i = 0; i < block_num; i++)
     {
         substitute(state[i]);
         shift_row(state[i]);
@@ -185,7 +191,7 @@ void encrypt(unsigned char state[][4][4], unsigned char round_keys[], size_t blo
     }
 
     FILE *encrypted = fopen(filename, "wb");
-    if(encrypted==NULL)
+    if (encrypted == NULL)
     {
         printf("Error writing file\n");
         exit(1);
@@ -201,7 +207,6 @@ int key_create(unsigned char key[], unsigned char round_keys[], char filename[])
     return key_len;
 }
 
-
 int menu()
 {
     int choice;
@@ -212,30 +217,49 @@ int menu()
     return choice;
 }
 
+int encrypt_menu()
+{
+    int choice;
+    printf("Which Algorithm?\n\n");
+    printf("1.AES\n2.BlowFish\n");
+    scanf("%d", &choice);
+    return choice;
+}
+
 int main()
 {
     unsigned char byteStream[mx];
     unsigned char state[mx][4][4];
     unsigned char key[32];
     unsigned char round_keys[240];
-    char filename[mx]="null";
-    size_t block_count=0;
-    int choice;
+    char filename[mx] = "null";
+    size_t block_count = 0,len;
+    int choice,key_len;
 
-
-    do{
+    do
+    {
         choice = menu();
 
-        switch(choice){
+        switch (choice)
+        {
         case 1:
             printf("Enter file path: \n");
             scanf("%s", filename);
 
-            size_t len = read_file(byteStream, state, 16, &block_count, filename);
-            int key_len = key_create(key, round_keys, filename);
+            int encrypt_choice = encrypt_menu();
 
-            encrypt(state, round_keys, block_count, len, filename);
+            if (encrypt_choice == 1)
+            {
+                len = read_file(byteStream, state, 16, &block_count, filename);
+                key_len = key_create(key, round_keys, filename);
 
+                encrypt(state, round_keys, block_count, len, filename);
+            }
+
+            else if(encrypt_choice==2)
+            {
+                
+            }
             printf("Encryption Done!\n\n");
 
             break;
@@ -274,8 +298,7 @@ int main()
             printf("Invalid choice\n");
             break;
         }
-    }while(choice!=5);
-
+    } while (choice != 5);
 
     return 0;
 }
