@@ -4,6 +4,7 @@
 #include "huffman.h"
 #include "blowfish.h"
 #include "aes.h"
+#include "lzw.h"
 #define key_size 32
 #define mx 1000
 
@@ -217,15 +218,6 @@ int menu()
     return choice;
 }
 
-int decrypt_menu()
-{
-    int choice;
-    printf("Which Algorithm?\n\n");
-    printf("1.AES\n2.BlowFish\n");
-    scanf("%d", &choice);
-    return choice;
-}
-
 int encrypt_menu()
 {
     int choice;
@@ -235,6 +227,16 @@ int encrypt_menu()
     return choice;
 }
 
+int compressMenu()
+{
+    int choice;
+    printf("Which Algorithm?\n\n");
+    printf("1.Huffman\n2.LZW\n");
+    scanf("%d", &choice);
+    return choice;
+}
+
+
 int main()
 {
     unsigned char byteStream[mx];
@@ -243,7 +245,7 @@ int main()
     unsigned char round_keys[240];
     char filename[mx] = "null";
     size_t block_count = 0, len;
-    int choice, key_len, encrypt_choice, decrypt_choice;
+    int choice, key_len, encrypt_choice, compChoice;
 
     do
     {
@@ -274,12 +276,12 @@ int main()
             break;
 
         case 2:
-            decrypt_choice = decrypt_menu();
+            encrypt_choice = encrypt_menu();
 
             printf("Enter file path: \n");
             scanf("%s", filename);
 
-            if (decrypt_choice == 1)
+            if (encrypt_choice == 1)
             {
                 read_file(byteStream, state, 16, &block_count, filename);
                 read_key(round_keys, key_len, filename);
@@ -287,7 +289,7 @@ int main()
                 decrypt(state, round_keys, len, block_count, filename);
             }
 
-            else if(decrypt_choice==2)
+            else if(encrypt_choice==2)
             {
                 read_key_files(filename);
                 decrypt_file_with_keys(filename);
@@ -298,14 +300,34 @@ int main()
         case 3:
             printf("Enter file path:\n");
             scanf("%s", filename);
-            init_huffman(filename, 1);
+
+            compChoice = compressMenu();
+            
+            if(compChoice==1)
+            {
+                init_huffman(filename, 1);
+            }
+            else if(compChoice==2)
+            {
+                lzwCompress(filename);
+            }
             printf("Compression Done\n");
             break;
 
         case 4:
             printf("Enter file path: \n");
             scanf("%s", filename);
-            init_huffman(filename, 2);
+
+            compChoice = compressMenu();
+
+            if(compChoice==1)
+            {
+                init_huffman(filename, 2);
+            }
+            else if(compChoice==2)
+            {
+                lzwDecompress(filename);
+            }
             printf("Decompression done\n");
             break;
 
