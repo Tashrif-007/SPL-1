@@ -1,1 +1,2 @@
-This file is to be encrypted by blowfish. but it doesnt quite work when not multiple of 64 bit. fixed it so wish me luck
+this file is going to be encrypted and is going to go through AES and blowfish.
+wish me luck!!
