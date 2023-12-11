@@ -272,7 +272,7 @@ int main()
                 blow_main(filename);
             }
             printf("Encryption Done!\n\n");
-
+            system("cls");
             break;
 
         case 2:
@@ -295,6 +295,7 @@ int main()
                 decrypt_file_with_keys(filename);
             }
             printf("Decryption Done!!\n\n");
+            system("cls");
             break;
 
         case 3:
@@ -312,6 +313,7 @@ int main()
                 lzwCompress(filename);
             }
             printf("Compression Done\n");
+            system("cls");
             break;
 
         case 4:
@@ -329,6 +331,7 @@ int main()
                 lzwDecompress(filename);
             }
             printf("Decompression done\n");
+            system("cls");
             break;
 
         case 5:

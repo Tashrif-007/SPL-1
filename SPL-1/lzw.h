@@ -43,7 +43,7 @@ void compressLZW(FILE *inputFile, FILE *outputFile) {
 
         if (dictionary[j].prefix == -1) {
             // Entry not found, add it to the dictionary
-            fprintf(outputFile, "%d ", currentCode);
+            fwrite(&currentCode, sizeof(int), 1, outputFile);
 
             dictionary[dictSize].prefix = currentCode;
             dictionary[dictSize].character = nextChar;
@@ -65,62 +65,49 @@ void compressLZW(FILE *inputFile, FILE *outputFile) {
 
 void decompressLZW(FILE *inputFile, FILE *outputFile) {
     DictionaryEntry dictionary[MAX_DICT_SIZE];
-    int dictSize = 256;
+    int dictSize = 256; // Initial dictionary size for ASCII characters
 
-    initializeDictionary(dictionary);
+    // Initialize dictionary with single-character entries
+    for (int i = 0; i < 256; ++i) {
+        dictionary[i].prefix = -1;
+        dictionary[i].character = (char)i;
+    }
 
-    int currentCode, prevCode;
-    fscanf(inputFile, "%d", &prevCode);
-    fputc(prevCode, outputFile);
+    int currentCode, previousCode;
 
-    while (fscanf(inputFile, "%d", &currentCode) != EOF) {
+    // Read the first code from the file
+    fread(&previousCode, sizeof(int), 1, inputFile);
+    fputc(dictionary[previousCode].character, outputFile);
+
+    // Main decompression loop
+    while (fread(&currentCode, sizeof(int), 1, inputFile) > 0) {
         if (currentCode < dictSize) {
-            char entry[MAX_DICT_SIZE];
-            int i = 0;
-
-            while (currentCode >= 0) {
-                entry[i++] = dictionary[currentCode].character;
+            // Code exists in the dictionary
+            while (currentCode >= 256) {
+                fputc(dictionary[currentCode].character, outputFile);
                 currentCode = dictionary[currentCode].prefix;
             }
-
-            for (i--; i >= 0; i--) {
-                fputc(entry[i], outputFile);
-            }
-
-            dictionary[dictSize].prefix = prevCode;
-            dictionary[dictSize].character = entry[0];
-            dictSize++;
-
-            if (dictSize == MAX_DICT_SIZE) {
-                initializeDictionary(dictionary);
-                dictSize = 256;
+            fputc(currentCode, outputFile);
+            
+            // Add new entry to the dictionary
+            if (dictSize < MAX_DICT_SIZE) {
+                dictionary[dictSize].prefix = previousCode;
+                dictionary[dictSize].character = currentCode;
+                ++dictSize;
             }
         } else {
-            char entry[MAX_DICT_SIZE];
-            int i = 0;
+            // Code does not exist in the dictionary (special case)
+            char firstChar = dictionary[previousCode].character;
+            fputc(firstChar, outputFile);
 
-            while (prevCode >= 0) {
-                entry[i++] = dictionary[prevCode].character;
-                prevCode = dictionary[prevCode].prefix;
+            // Add new entry to the dictionary
+            if (dictSize < MAX_DICT_SIZE) {
+                dictionary[dictSize].prefix = previousCode;
+                dictionary[dictSize].character = firstChar;
+                ++dictSize;
             }
-
-            for (i--; i >= 0; i--) {
-                fputc(entry[i], outputFile);
-            }
-
-            dictionary[dictSize].prefix = prevCode;
-            dictionary[dictSize].character = entry[0];
-            dictSize++;
-
-            if (dictSize == MAX_DICT_SIZE) {
-                initializeDictionary(dictionary);
-                dictSize = 256;
-            }
-
-            fputc(entry[0], outputFile);
         }
-
-        prevCode = currentCode;
+        previousCode = currentCode;
     }
 }
 
@@ -135,24 +122,21 @@ void lzwCompress(char* filename) {
     strcpy(result, filename);
 
     int dot_position = -1;
-    for (int i = strlen(result) - 1; i >= 0; i--)
-    {
-        if (result[i] == '.')
-        {
+    for (int i = strlen(result) - 1; i >= 0; i--) {
+        if (result[i] == '.') {
             dot_position = i;
             break;
         }
     }
 
-    if (dot_position == -1)
-    {
+    if (dot_position == -1) {
         printf("Invalid compressed file name.\n");
         exit(1);
     }
 
-    strcpy(result + dot_position, ".compressed.lzw");
+    strcpy(result + dot_position, ".compressed.bin");  // Use .compressed.bin instead of .compressed.txt
 
-    FILE *compressedFile = fopen(result, "wb");
+    FILE *compressedFile = fopen(result, "wb");  // Open in binary mode
     if (compressedFile == NULL) {
         perror("Error opening compressed file for writing");
         fclose(inputFile);
@@ -164,13 +148,11 @@ void lzwCompress(char* filename) {
 
     fclose(inputFile);
     fclose(compressedFile);
-
 }
 
-void lzwDecompress(char* filename)
-{
-    
-    FILE *compressedInputFile = fopen(filename, "rb");
+
+void lzwDecompress(char* filename) {
+    FILE *compressedInputFile = fopen(filename, "rb");  // Open in binary mode
     if (compressedInputFile == NULL) {
         perror("Error opening compressed file for reading");
         exit(EXIT_FAILURE);
@@ -180,17 +162,14 @@ void lzwDecompress(char* filename)
     strcpy(result, filename);
 
     int dot_position = -1;
-    for (int i = 0; i <= strlen(result); i++)
-    {
-        if (result[i] == '.')
-        {
+    for (int i = 0; i <= strlen(result); i++) {
+        if (result[i] == '.') {
             dot_position = i;
             break;
         }
     }
 
-    if (dot_position == -1)
-    {
+    if (dot_position == -1) {
         printf("Invalid compressed file name.\n");
         exit(1);
     }
@@ -208,6 +187,6 @@ void lzwDecompress(char* filename)
 
     fclose(compressedInputFile);
     fclose(decompressedFile);
-    
 }
+
 
