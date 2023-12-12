@@ -28,7 +28,7 @@ void compressLZW(FILE *inputFile, FILE *outputFile) {
         int nextChar = fgetc(inputFile);
 
         if (nextChar == EOF) {
-            fprintf(outputFile, "%d\n", currentCode);
+            fwrite(&currentCode, sizeof(int), 1, outputFile);
             break;
         }
 
@@ -42,14 +42,14 @@ void compressLZW(FILE *inputFile, FILE *outputFile) {
         }
 
         if (dictionary[j].prefix == -1) {
-            // Entry not found, add it to the dictionary
+            
             fwrite(&currentCode, sizeof(int), 1, outputFile);
 
             dictionary[dictSize].prefix = currentCode;
             dictionary[dictSize].character = nextChar;
             dictSize++;
 
-            // Check if the dictionary is full
+        
             if (dictSize == MAX_DICT_SIZE) {
                 initializeDictionary(dictionary);
                 dictSize = 256;
@@ -57,7 +57,7 @@ void compressLZW(FILE *inputFile, FILE *outputFile) {
 
             currentCode = nextChar;
         } else {
-            // Entry found in dictionary, continue with the next character
+        
             currentCode = j;
         }
     }
@@ -65,9 +65,9 @@ void compressLZW(FILE *inputFile, FILE *outputFile) {
 
 void decompressLZW(FILE *inputFile, FILE *outputFile) {
     DictionaryEntry dictionary[MAX_DICT_SIZE];
-    int dictSize = 256; // Initial dictionary size for ASCII characters
+    int dictSize = 256; 
 
-    // Initialize dictionary with single-character entries
+  
     for (int i = 0; i < 256; ++i) {
         dictionary[i].prefix = -1;
         dictionary[i].character = (char)i;
@@ -75,32 +75,30 @@ void decompressLZW(FILE *inputFile, FILE *outputFile) {
 
     int currentCode, previousCode;
 
-    // Read the first code from the file
     fread(&previousCode, sizeof(int), 1, inputFile);
     fputc(dictionary[previousCode].character, outputFile);
 
-    // Main decompression loop
+   
     while (fread(&currentCode, sizeof(int), 1, inputFile) > 0) {
         if (currentCode < dictSize) {
-            // Code exists in the dictionary
+            
             while (currentCode >= 256) {
                 fputc(dictionary[currentCode].character, outputFile);
                 currentCode = dictionary[currentCode].prefix;
             }
             fputc(currentCode, outputFile);
             
-            // Add new entry to the dictionary
             if (dictSize < MAX_DICT_SIZE) {
                 dictionary[dictSize].prefix = previousCode;
                 dictionary[dictSize].character = currentCode;
                 ++dictSize;
             }
         } else {
-            // Code does not exist in the dictionary (special case)
+        
             char firstChar = dictionary[previousCode].character;
             fputc(firstChar, outputFile);
 
-            // Add new entry to the dictionary
+          
             if (dictSize < MAX_DICT_SIZE) {
                 dictionary[dictSize].prefix = previousCode;
                 dictionary[dictSize].character = firstChar;
@@ -136,16 +134,16 @@ void lzwCompress(char* filename, size_t *original_size, size_t *compressed_size)
         exit(1);
     }
 
-    strcpy(result + dot_position, ".compressed.bin");  // Use .compressed.bin instead of .compressed.txt
+    strcpy(result + dot_position, ".compressed.bin");  
 
-    FILE *compressedFile = fopen(result, "wb");  // Open in binary mode
+    FILE *compressedFile = fopen(result, "wb"); 
     if (compressedFile == NULL) {
         perror("Error opening compressed file for writing");
         fclose(inputFile);
         exit(EXIT_FAILURE);
     }
 
-    // Compress the input file
+
     compressLZW(inputFile, compressedFile);
     fseek(compressedFile, 0, SEEK_END);
     *compressed_size = ftell(compressedFile);
@@ -155,7 +153,7 @@ void lzwCompress(char* filename, size_t *original_size, size_t *compressed_size)
 
 
 void lzwDecompress(char* filename) {
-    FILE *compressedInputFile = fopen(filename, "rb");  // Open in binary mode
+    FILE *compressedInputFile = fopen(filename, "rb"); 
     if (compressedInputFile == NULL) {
         perror("Error opening compressed file for reading");
         exit(EXIT_FAILURE);
