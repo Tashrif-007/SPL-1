@@ -1,2 +1,1 @@
-this file is going to be encrypted and is going to go through AES and blowfish.
-wish me luck!!
+this is a small file

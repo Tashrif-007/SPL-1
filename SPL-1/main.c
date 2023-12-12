@@ -9,6 +9,16 @@
 #define key_size 32
 #define mx 1000
 
+size_t getSize(char* filename)
+{
+    FILE *fp = fopen(filename, "rb");
+
+    fseek(fp, 0, SEEK_END);
+    size_t size = ftell(fp);
+    fclose(fp);
+    return size;
+}
+
 void pad_bytes(unsigned char *byteStream, size_t *len)
 {
     size_t padLen = 16 - (*len % 16);
@@ -239,6 +249,7 @@ size_t read_fileDecrypt(unsigned char *byteStream, unsigned char state[4][4], si
     return len;
 }
 
+
 size_t decrypt(unsigned char state[4][4], unsigned char round_keys[240], char filename[], unsigned char output[])
 {
     add_round_key(state, round_keys, 14);
@@ -334,7 +345,7 @@ int main()
     unsigned char key[32];
     unsigned char round_keys[240];
     char filename[mx] = "null";
-    size_t block_count = 0, len;
+    size_t block_count = 0, len, original_size, compressed_size;
     int choice, key_len, encrypt_choice, compChoice;
 
     do
@@ -368,7 +379,7 @@ int main()
 
             printf("Enter file path: \n");
             scanf("%s", filename);
-
+            
             if (encrypt_choice == 1)
             {
                 read_key(round_keys, key_len, filename);
@@ -387,19 +398,20 @@ int main()
         case 3:
             printf("Enter file path:\n");
             scanf("%s", filename);
-
             compChoice = compressMenu();
 
             if (compChoice == 1)
             {
-                init_huffman(filename, 1);
+                init_huffman(filename, 1, &original_size, &compressed_size);
             }
             else if (compChoice == 2)
             {
-                lzwCompress(filename);
+                lzwCompress(filename, &original_size, &compressed_size);
             }
+            
             printf("Compression Done\n");
-            system("cls");
+            printf("original: %zu bytes\ncompressed: %zu bytes\n", original_size, compressed_size);
+            //system("cls");
             break;
 
         case 4:
@@ -410,7 +422,7 @@ int main()
 
             if (compChoice == 1)
             {
-                init_huffman(filename, 2);
+                init_huffman(filename, 2, &original_size, &compressed_size);
             }
             else if (compChoice == 2)
             {

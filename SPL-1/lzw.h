@@ -111,13 +111,15 @@ void decompressLZW(FILE *inputFile, FILE *outputFile) {
     }
 }
 
-void lzwCompress(char* filename) {
+void lzwCompress(char* filename, size_t *original_size, size_t *compressed_size) {
     FILE *inputFile = fopen(filename, "r");
     if (inputFile == NULL) {
         perror("Error opening input file");
         exit(EXIT_FAILURE);
     }
-
+    fseek(inputFile, 0, SEEK_END);
+    *original_size = ftell(inputFile);
+    fseek(inputFile, 0 ,SEEK_SET);
     char result[1000];
     strcpy(result, filename);
 
@@ -145,7 +147,8 @@ void lzwCompress(char* filename) {
 
     // Compress the input file
     compressLZW(inputFile, compressedFile);
-
+    fseek(compressedFile, 0, SEEK_END);
+    *compressed_size = ftell(compressedFile);
     fclose(inputFile);
     fclose(compressedFile);
 }

@@ -37,12 +37,15 @@ void compress(struct node* root, char code[], int top, char *res[])
 }
 
 
-void write_file(char filename[], char *res[])
+void write_file(char filename[], char *res[], size_t *original_size, size_t *compressed_size)
 {
     FILE *input = fopen(filename, "r");
     char output[1000];
     strcpy(output, filename);
 
+    fseek(input, 0, SEEK_END);
+    *original_size = ftell(input);
+    fseek(input, 0, SEEK_SET);
     for(int i=0; i<strlen(filename); i++)
     {
         if(output[i]=='.')
@@ -97,6 +100,8 @@ void write_file(char filename[], char *res[])
     {
         fwrite(&buffer, sizeof(char), 1, out);
     }
+    fseek(out, 0, SEEK_END);
+    *compressed_size = ftell(out);
 
     fclose(input);
     fclose(out);
@@ -278,9 +283,8 @@ struct node* make_tree(char input[])
         }
         return arr[0];
 }
-void init_huffman(char input[], int choice)
+void init_huffman(char input[], int choice, size_t *original_size, size_t *compressed_size)
 {
-
     if(choice==1)
     {
         struct node* arr=make_tree(input);
@@ -288,7 +292,7 @@ void init_huffman(char input[], int choice)
         char code[256];
         char *res[256];
         compress(curr, code, 0, res);
-        write_file(input, res);
+        write_file(input, res, original_size, compressed_size);
         //write_array(input, res);
     }
     else if(choice==2)
