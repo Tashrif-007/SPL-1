@@ -6,6 +6,7 @@
 #include "aes.h"
 #include "lzw.h"
 #include "filezipper.h"
+#include <time.h>
 #define key_size 32
 #define mx 1000
 
@@ -347,6 +348,8 @@ int main()
     char filename[mx] = "null";
     size_t block_count = 0, len, original_size, compressed_size;
     int choice, key_len, encrypt_choice, compChoice;
+    clock_t start,end;
+    double taken;
 
     do
     {
@@ -362,16 +365,22 @@ int main()
 
             if (encrypt_choice == 1)
             {
+                start = clock();
                 key_len = key_create(key, round_keys, filename);
                 len = read_fileEncrypt(byteStream, state, 16, filename, round_keys);
+                end = clock();
+                memset(byteStream, 0, sizeof(unsigned char));
             }
 
             else if (encrypt_choice == 2)
             {
                 blow_main(filename);
+                memset(byteStream, 0, sizeof(unsigned char));
             }
+            taken = (double)(end-start)/CLOCKS_PER_SEC;
             printf("Encryption Done!\n\n");
-            system("cls");
+            printf("Time taken for Encryption: %lf\n", taken);
+            //system("cls");
             break;
 
         case 2:
@@ -382,24 +391,30 @@ int main()
             
             if (encrypt_choice == 1)
             {
+                start = clock();
                 read_key(round_keys, key_len, filename);
                 read_fileDecrypt(byteStream, state, 16, filename, round_keys);
+                end = clock();
+                memset(byteStream, 0, sizeof(unsigned char));
             }
 
             else if (encrypt_choice == 2)
             {
                 read_key_files(filename);
                 decrypt_file_with_keys(filename);
+                memset(byteStream, 0, sizeof(unsigned char));
             }
-            printf("Decryption Done!!\n\n");
-            system("cls");
+            taken = (double)(end-start)/CLOCKS_PER_SEC;
+            printf("Dencryption Done!\n\n");
+            printf("Time taken for Decryption: %lf\n", taken);
+            //system("cls");
             break;
 
         case 3:
-            printf("Enter file path:\n");
-            scanf("%s", filename);
             compChoice = compressMenu();
 
+            printf("Enter file path:\n");
+            scanf("%s", filename);
             if (compChoice == 1)
             {
                 init_huffman(filename, 1, &original_size, &compressed_size);
@@ -415,10 +430,10 @@ int main()
             break;
 
         case 4:
+            compChoice = compressMenu();
+
             printf("Enter file path: \n");
             scanf("%s", filename);
-
-            compChoice = compressMenu();
 
             if (compChoice == 1)
             {
