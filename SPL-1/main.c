@@ -379,7 +379,7 @@ int main()
             }
             taken = (double)(end-start)/CLOCKS_PER_SEC;
             printf("Encryption Done!\n\n");
-            printf("Time taken for Encryption: %lf\n", taken);
+            printf("Time taken for Encryption: %lf sec\n", taken);
             //system("cls");
             break;
 
@@ -406,7 +406,7 @@ int main()
             }
             taken = (double)(end-start)/CLOCKS_PER_SEC;
             printf("Dencryption Done!\n\n");
-            printf("Time taken for Decryption: %lf\n", taken);
+            printf("Time taken for Decryption: %lf sec\n", taken);
             //system("cls");
             break;
 

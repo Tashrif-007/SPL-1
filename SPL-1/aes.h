@@ -287,20 +287,14 @@ int key_expansion(unsigned char key[32], unsigned char roundKeys[240], char file
     char keyname[1000];
     strcpy(keyname, filename);
 
-    for(int i=0; i<strlen(keyname); i++)
-    {
-        if(keyname[i]=='.')
-        {
-            keyname[i]='k';
-            keyname[i+1]='e';
-            keyname[i+2]='y';
-            keyname[i+3]='.';
-            keyname[i+4]='t';
-            keyname[i+5]='x';
-            keyname[i+6]='t';
+    int dot_position = -1;
+    for (int i = strlen(keyname) - 1; i >= 0; i--) {
+        if (keyname[i] == '.') {
+            dot_position = i;
             break;
         }
     }
+    strcpy(keyname + dot_position, "key.txt"); 
 
     FILE *keying = fopen(keyname, "wb");
 

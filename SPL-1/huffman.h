@@ -106,20 +106,6 @@ void write_file(char filename[], char *res[], size_t *original_size, size_t *com
     fclose(input);
     fclose(out);
 }
-void write_array(char input[], char *res[])
-{
-    FILE *fp = fopen(input, "wb");
-    int row,col;
-    for(int i=0; res[i][0]; i++)
-        row++;
-
-    for(int i=0; res[0][i]; i++)
-        col++;
-
-    fwrite(res, 0, row*col, fp);
-
-    fclose(fp);
-}
 
 void decompress(char output[], struct node* root)
 {
@@ -185,7 +171,6 @@ void decompress(char output[], struct node* root)
             }
         }
         
-        // Check for the end of the file before reading the next byte
         if (feof(out))
             break;
     }
