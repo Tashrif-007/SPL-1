@@ -339,13 +339,36 @@ int compressMenu()
     return choice;
 }
 
+void getFileName(char *filePath, char *fileName) {
+    char *lastSlash = strrchr(filePath, '\\');
+    char *lastForwardSlash = strrchr(filePath, '/');
+
+    // Use the maximum of the two positions
+    char *lastSeparator = (lastSlash > lastForwardSlash) ? lastSlash : lastForwardSlash;
+
+    if (lastSeparator != NULL) {
+        // Increment the pointer to get the actual filename
+        strcpy(fileName, lastSeparator + 1);
+    } else {
+        // No slash found, just copy the whole path
+        strcpy(fileName, filePath);
+    }
+}
+
+void write_info(char type[],char filename[], double timeTaken, size_t orisize, size_t comsize)
+{
+    FILE *fp = fopen("report.txt", "a");
+
+    fprintf(fp, "%s\t%s\t%lf sec\t%zu bytes\t%zu bytes\n", filename,type,timeTaken, orisize, comsize);
+    fclose(fp);
+}
 int main()
 {
     unsigned char byteStream[mx];
     unsigned char state[4][4];
     unsigned char key[32];
     unsigned char round_keys[240];
-    char filename[mx] = "null";
+    char filename[mx] = "null", file[mx];
     size_t block_count = 0, len, original_size, compressed_size;
     int choice, key_len, encrypt_choice, compChoice;
     clock_t start,end;
@@ -362,24 +385,34 @@ int main()
 
             printf("Enter file path: \n");
             scanf("%s", filename);
-
+            original_size = getSize(filename);
             if (encrypt_choice == 1)
             {
                 start = clock();
                 key_len = key_create(key, round_keys, filename);
                 len = read_fileEncrypt(byteStream, state, 16, filename, round_keys);
                 end = clock();
+                compressed_size = getSize(filename);
+                taken = (double)(end-start)/CLOCKS_PER_SEC;
+                getFileName(filename, file);
+                write_info("AES Encryption",file, taken, original_size, compressed_size);
                 memset(byteStream, 0, sizeof(unsigned char));
             }
 
             else if (encrypt_choice == 2)
             {
+                start = clock();
                 blow_main(filename);
+                end = clock();
+                compressed_size = getSize(filename);
+                taken = (double)(end-start)/CLOCKS_PER_SEC;
+                getFileName(filename, file);
+                write_info("BlowFish Encryption",file, taken, original_size, compressed_size);
                 memset(byteStream, 0, sizeof(unsigned char));
             }
-            taken = (double)(end-start)/CLOCKS_PER_SEC;
+            
             printf("Encryption Done!\n\n");
-            printf("Time taken for Encryption: %lf sec\n", taken);
+            
             //system("cls");
             break;
 
@@ -388,26 +421,35 @@ int main()
 
             printf("Enter file path: \n");
             scanf("%s", filename);
-            
+            original_size = getSize(filename);
             if (encrypt_choice == 1)
             {
                 start = clock();
                 read_key(round_keys, key_len, filename);
                 read_fileDecrypt(byteStream, state, 16, filename, round_keys);
                 end = clock();
+                compressed_size = getSize(filename);
+                taken = (double)(end-start)/CLOCKS_PER_SEC;
+                getFileName(filename, file);
+                write_info("AES Decryption",file, taken, original_size, compressed_size);
                 memset(byteStream, 0, sizeof(unsigned char));
             }
 
             else if (encrypt_choice == 2)
             {
+                start = clock();
                 read_key_files(filename);
                 decrypt_file_with_keys(filename);
+                end = clock();
+                compressed_size = getSize(filename);
+                taken = (double)(end-start)/CLOCKS_PER_SEC;
+                getFileName(filename, file);
+                write_info("Blowfish Decryption",file, taken, original_size, compressed_size);
                 memset(byteStream, 0, sizeof(unsigned char));
             }
-            taken = (double)(end-start)/CLOCKS_PER_SEC;
-            printf("Dencryption Done!\n\n");
-            printf("Time taken for Decryption: %lf sec\n", taken);
             //system("cls");
+            printf("Dencryption Done!\n\n");
+            
             break;
 
         case 3:
@@ -415,17 +457,28 @@ int main()
 
             printf("Enter file path:\n");
             scanf("%s", filename);
+            
+            
             if (compChoice == 1)
             {
+                start = clock();
                 init_huffman(filename, 1, &original_size, &compressed_size);
+                end = clock();
+                taken = (double)(end-start)/CLOCKS_PER_SEC;
+                getFileName(filename, file);
+                write_info("Huffman Compression",file, taken, original_size, compressed_size);
             }
             else if (compChoice == 2)
             {
+                start = clock();
                 lzwCompress(filename, &original_size, &compressed_size);
+                end = clock();
+                taken = (double)(end-start)/CLOCKS_PER_SEC;
+                getFileName(filename, file);
+                write_info("LZW Compression",file, taken, original_size, compressed_size);
             }
             
             printf("Compression Done\n");
-            printf("original: %zu bytes\ncompressed: %zu bytes\n", original_size, compressed_size);
             //system("cls");
             break;
 
@@ -437,11 +490,21 @@ int main()
 
             if (compChoice == 1)
             {
+                start = clock();
                 init_huffman(filename, 2, &original_size, &compressed_size);
+                end = clock();
+                taken = (double)(end-start)/CLOCKS_PER_SEC;
+                getFileName(filename, file);
+                write_info("Huffman Decompression",file, taken, original_size, compressed_size);
             }
             else if (compChoice == 2)
             {
+                start = clock();
                 lzwDecompress(filename);
+                end = clock();
+                taken = (double)(end-start)/CLOCKS_PER_SEC;
+                getFileName(filename, file);
+                write_info("LZW Decompression",file, taken, original_size, compressed_size);
             }
             printf("Decompression done\n");
             system("cls");
@@ -455,7 +518,7 @@ int main()
             printf("Invalid choice\n");
             break;
         }
-    } while (choice != 5);
+    } while (choice!=5);
 
     return 0;
 }
