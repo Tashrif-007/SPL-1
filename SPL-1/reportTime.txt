@@ -1,0 +1,7 @@
+FileName           Algorithm               Time
+input.txt	AES Encryption	        0.010000 sec
+input2.txt	BlowFish Enryption	0.004000 sec
+input.txt	AES Decryption	        0.012000 sec
+input2.txt	BlowFish Decryption	0.004000 sec
+input.txt	Huffman Compression	0.003000 sec
+inputout.txt	Huffman Decompression	0.002000 sec
