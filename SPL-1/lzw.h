@@ -134,7 +134,7 @@ void lzwCompress(char* filename, size_t *original_size, size_t *compressed_size)
         exit(1);
     }
 
-    strcpy(result + dot_position, ".compressed.bin");  
+    strcpy(result + dot_position, "compressed.bin");  
 
     FILE *compressedFile = fopen(result, "wb"); 
     if (compressedFile == NULL) {
@@ -175,7 +175,7 @@ void lzwDecompress(char* filename) {
         exit(1);
     }
 
-    strcpy(result + dot_position, ".decompressedlzw.txt");
+    strcpy(result + dot_position, "decompressedlzw.txt");
 
     FILE *decompressedFile = fopen(result, "w");
     if (decompressedFile == NULL) {

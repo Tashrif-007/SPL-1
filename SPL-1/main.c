@@ -314,6 +314,7 @@ int key_create(unsigned char key[], unsigned char round_keys[], char filename[])
 int menu()
 {
     int choice;
+    printf("\n------------------\n");
     printf("FILECRYPTOZIPPER\n");
     printf("------------------\n\n");
     printf("1.Encryption\n2.Decryption\n3.Compress\n4.Decompress\n5.Exit\n");
@@ -343,14 +344,11 @@ void getFileName(char *filePath, char *fileName) {
     char *lastSlash = strrchr(filePath, '\\');
     char *lastForwardSlash = strrchr(filePath, '/');
 
-    // Use the maximum of the two positions
     char *lastSeparator = (lastSlash > lastForwardSlash) ? lastSlash : lastForwardSlash;
 
     if (lastSeparator != NULL) {
-        // Increment the pointer to get the actual filename
         strcpy(fileName, lastSeparator + 1);
     } else {
-        // No slash found, just copy the whole path
         strcpy(fileName, filePath);
     }
 }

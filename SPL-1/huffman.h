@@ -107,7 +107,7 @@ void write_file(char filename[], char *res[], size_t *original_size, size_t *com
     fclose(out);
 }
 
-void decompress(char output[], struct node* root)
+void decompress(char output[], struct node* root, size_t *original_size, size_t *compressed_size)
 {
     FILE *out = fopen(output, "rb");  
     if (!out)
@@ -115,7 +115,9 @@ void decompress(char output[], struct node* root)
         printf("Unable to open the compressed file.\n");
         exit(1);
     }
-
+    fseek(out, 0, SEEK_END);
+    *original_size = ftell(out);
+    fseek(out, 0, SEEK_SET);
     char result[1000];
     strcpy(result, output);
 
@@ -135,7 +137,7 @@ void decompress(char output[], struct node* root)
         exit(1);
     }
 
-    strcpy(result + dot_position, ".decompressed.txt");
+    strcpy(result + dot_position, "decompressed.txt");
 
     FILE *finall = fopen(result, "w");
     if (!finall)
@@ -174,6 +176,9 @@ void decompress(char output[], struct node* root)
         if (feof(out))
             break;
     }
+    fseek(finall, 0, SEEK_END);
+    *compressed_size = ftell(finall);
+    fseek(finall, 0, SEEK_SET);
 
     fclose(out);
     fclose(finall);
@@ -278,7 +283,6 @@ void init_huffman(char input[], int choice, size_t *original_size, size_t *compr
         char *res[256];
         compress(curr, code, 0, res);
         write_file(input, res, original_size, compressed_size);
-        //write_array(input, res);
     }
     else if(choice==2)
     {
@@ -298,6 +302,6 @@ void init_huffman(char input[], int choice, size_t *original_size, size_t *compr
             }
         }
         struct node* arr=make_tree(output);
-        decompress(input, arr);
+        decompress(input, arr, original_size, compressed_size);
     }
 }

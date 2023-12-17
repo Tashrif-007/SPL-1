@@ -1,7 +1,2 @@
-FileName          Algorithm            Size Diff
-input.txt	AES Encryption	       14  bytes
-input2.txt	BlowFish Encryption	0  bytes
-input.txt	AES Decryption	       14  bytes
-input2.txt	BlowFish Decryption	0  bytes
-input.txt	Huffman Compression	17 bytes
-inputout.txt	Huffman Decompression	17 bytes
+FileName         Algorithm	Size diff
+
